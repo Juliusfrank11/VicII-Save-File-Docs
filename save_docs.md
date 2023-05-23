@@ -323,8 +323,6 @@ POPs are separately indexed by POP type, define within the array that defines th
 
 Except for `artisans`, pops seem to share the same keys.
 
-Note: Craftsmen are called `labourers` in save file structure
-
 ### `id` (int)
 
 UNCLEAR, perhaps every pop has unique ID
@@ -417,6 +415,15 @@ UNCLEAR
 ### `movement_issue` (string)
 
 displayed rebel faction/voting issue on pop screen
+
+### `days_of_loss` (int) (Craftsmen and clerks only)
+
+UNCLEAR, might be days of unemployment since it seems to be craftsmen-exclusive
+
+
+### `faction` (array of key-int pairs)
+
+Probably indicates rebel faction, has `id` and `type` as keys
 
 ### `artisans` exclusive keys
 
@@ -521,4 +528,40 @@ Lots of documentation needed.
 
 ## `building_construction` (Array of key-value pairs)
 
-Contains 
+Contains information about factories being constructed
+
+### `id` (Array of key-value pairs)
+
+Two keys: `id` and `type`, both take on int values
+
+### `start_date` (date)
+
+Date when construction started
+
+### `date` (date)
+
+Date when construction is expected to finish
+
+### `location` (int)
+
+Duplicate of province id
+
+### `country` (string)
+
+Tag of the country that owns the factory
+
+### `building` (int)
+
+presumably building type ID
+
+### `input_goods` (Array of key-value pairs)
+
+Information about factory input and monartary balances
+
+#### `goods_demand` (Array of key-decimal pairs)
+
+
+#### `input_goods` (Array of key-decimal pairs)
+
+#### `money` (decimal)
+
