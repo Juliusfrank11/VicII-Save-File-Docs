@@ -13,6 +13,8 @@ Decmials are up to 5 decimal palces, i.e. `148.68872`
 
 Dates are given as strings in `"YYYY.M.D"` format
 
+Unlike `json`, keys are NOT unique. This fact is used to list multiple instances of the same class of object within an array. For example 
+
 ## Production tab
 
 The Production *tab* on the Production *screen* (thanks PDX) seems to be 
@@ -280,30 +282,58 @@ TODO: find out range and where/if this is displayed in-game
 Two values indicating fort level. Maybe current and max fort level for when 
 forts are still in construction?
 
-Unlike most decimals there are only three decimal spaces specified in this 
-array.
+Unlike most decimals there are only three decimal spaces specified in this array.
 
 
-## `Railroad`
+## `Railroad` (Array of Decimals)
 
 As above, but for railroads
 
-## POP Data Structure
+## `life_rating` (int)
 
-POPs are seperately indexed by POP type. Right now, the pop structures are 
-listed seperately in case any of them have keys that are unique
+Life rating of the province
 
-## `aristocrats` (Array of keys-value) pairs
+## `infrastructure` (Decimal)
+
+Infrastructure of the province. Unlike most decimals, this value is only specified to three decimal places
+
+## `last_imigration` (date)
+
+Presumably, the date that an individual (or Pop?) last immigrated to the province. The typo is intentional: that's how it is in the save file.
+
+## `last_controller_change` (date)
+
+Presumably, the province was last occupied/unoccupied.
+
+## `crime` (int)
+
+Type of crime in province
+
+TODO: Document correpondense
+
+## `party_loyalty` (Array of key-value pairs)
+
+Loyalty to a specific _ideology_ rather than party, despite the name
+
+Has a string-valued `ideology` to specify ideology and decimal-valued `loyalty_value` to specify the value.
+
+## POP Data Sub-Structure
+
+POPs are separately indexed by POP type, define within the array that defines the provinces the pop is located in. So every unique POP in a province has a separate Array to define them within the province structure. 
+
+Except for `artisans`, pops seem to share the same keys.
+
+Note: Craftsmen are called `labourers` in save file structure
 
 ### `id` (int)
 
-UNCLEAR, prehaps every pop has unique ID
+UNCLEAR, perhaps every pop has unique ID
 
 ### `size` (int)
 
-The amount of people in the pop
+The number of people in the pop
 
-### Culture/Religion
+##3 Culture/Religion
 
 Culture and relgion is specified in a very strange way, it so done by making 
 the culture the key and the religion the value. For example, to make a pop 
@@ -319,7 +349,7 @@ Referred to as "Cash Reserves" in-game
 
 ### `ideology` (Array of int-decimal pairs)
 
-Ideology of the pop, using numbers to index the ideologies. The numbers are 
+Ideological distribution of the pop, using numbers to index the ideologies. The numbers are 
 
 1. Fascist (Bruh)
 2. Reactionary
@@ -329,15 +359,14 @@ Ideology of the pop, using numbers to index the ideologies. The numbers are
 6. Liberal
 7. Anarcho-Liberal
 
-TODO: Verify mechancism of how percentages are allocated if they numbers 
-don't add to 100.
+TODO: Verify the mechanism of how percentages are allocated if their numbers don't add to 100.
 
 ### `issues` (Array of int-decimal pairs)
 
 Issue concerns of the pop, with issues represented by numbers.
 
 TODO: Document maps between ids and issues
-TODO: Vertify mechancisms of how percentages are allocated if they don't add 
+TODO: Verify mechanisms of how percentages are allocated if they don't add 
 up to 100
 
 ### `con` (decimal)
@@ -346,11 +375,11 @@ Consciousness of the pop, between 0.00000 and 10.00000
 
 ### `mil` (decimal)
 
-Miltancy of the pop, between 0.00000 and 10.00000
+Militancy of the pop, between 0.00000 and 10.00000
 
 ### `literacy` (decimal)
 
-Literacy represented as a fraciton. Between 0.0000 and 1.0000
+Literacy is represented as a fraction. Between 0.0000 and 1.0000
 
 ### `bank` (decimal)
 
@@ -360,12 +389,28 @@ Referred to as "Savings in Bank" in-game
 
 UNCLEAR
 
+### `promoted` (Decimal)
 
-### `luxury_needs` (decimal)
+Number of individuals in pop due to be promoted this month.
+
+### `demoted` (Decimal)
+
+Number of individuals in pop due to be demoted this month.
+
+### `life_needs`, `everyday_needs`, and `luxury_needs` (decimal)
+
+Percentage of needs filled, always less than 1. It seems that if needs are 100% filled, this key is just not listed
+
+### `size_changes` (Array of ints)
 
 UNCLEAR
 
+
 ### `random` (int)
+
+UNCLEAR
+
+### `con_factor` (Decimal)
 
 UNCLEAR
 
@@ -373,35 +418,107 @@ UNCLEAR
 
 displayed rebel faction/voting issue on pop screen
 
-## `artisans`
+### `artisans` exclusive keys
 
-Same as in `aristocrats`
-
-- `id`
-- `size`
-- culture/religion
-- `money`
-- `ideology`
-- `issues`
-- `con`
-- `literacy`
-- `con_factor`
-- `random`
-
-### `production_type` (string)
+#### `production_type` (string)
 
 Determines RGO output of pop
 
 TODO: Document all production types
 
-### `stockpile` (Array of key-decimal pairs)
+#### `stockpile` (Array of key-decimal pairs)
 
 UNCLEAR, has RGOs as keys
 
-### `need` (Array of key-decimal pairs)
+#### `need` (Array of key-decimal pairs)
 
 UNCLEAR, has RGOs as keys
 
-### `last_spending)` (Decimal)
+#### `last_spending` (Decimal)
 
 UNCLEAR
+
+#### `current_producing` (Decimal)
+
+UNCLEAR
+
+#### `percent_afforded` (Decimal)
+
+UNCLEAR
+
+#### `percent_sold_domestic` (Decimal)
+
+UNCLEAR
+
+#### `percent_sold_export` (Decimal)
+
+UNCLEAR
+
+#### `leftover` (Decimal)
+
+UNCLEAR
+
+
+#### `leftover` (Decimal)
+
+UNCLEAR
+
+#### `throttle` (Decimal)
+
+UNCLEAR
+
+#### `needs_cost` (Decimal)
+
+UNCLEAR
+
+#### `production_income` (Decimal)
+
+UNCLEAR
+
+## `rgo` (Array of key-value pairs)
+
+Contains RGO data
+
+### `last_income` (decimal)
+
+Number of pounds RGO output made last month
+
+### `goods_type` (string)
+
+RGO type
+
+### `employment` (Array of key-value pairs)
+
+Specifies the employment activity in the province
+
+#### `province_id` (int)
+
+Respecified province idea, because?????
+
+#### `employees` (Array of Arrays)
+
+Arrays follow the structure:
+
+```
+{
+	province_pop_id= {
+		province_id=0
+		index=0
+		type=0
+	}
+	count=0
+}
+```
+
+All values are ints. Seems pops are fetched by province (which means `province_id` is fetched three times in the province structure)
+
+## `unit_names` (array of key-value pairs)
+
+Seems to contain data on units stationed in the province. Uses an array of arrays called `data`, seeming to index unit type by the position within `data`.
+
+Lots of documentation needed.
+
+
+## `building_construction` (Array of key-value pairs)
+
+Contains 
