@@ -396,10 +396,12 @@ TODO: Document all production types
 
 ### `stockpile` (Array of key-decimal pairs)
 
-UNCLEAR
+UNCLEAR, has RGOs as keys
 
 ### `need` (Array of key-decimal pairs)
 
+UNCLEAR, has RGOs as keys
+
+### `last_spending)` (Decimal)
+
 UNCLEAR
-
-
