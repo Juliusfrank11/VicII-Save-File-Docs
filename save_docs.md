@@ -331,7 +331,7 @@ UNCLEAR, perhaps every pop has unique ID
 
 The number of people in the pop
 
-##3 Culture/Religion
+### Culture/Religion
 
 Culture and relgion is specified in a very strange way, it so done by making 
 the culture the key and the religion the value. For example, to make a pop 
