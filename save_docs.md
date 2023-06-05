@@ -652,3 +652,215 @@ UNCLEAR, but probably just the number of troops ordered?
 ### `rally_point` (int)
 
 UNCLEAR, has values `-1`, `0` and `1`
+
+# Country-level data
+
+Arrays that define country data have the country's three-letter tag as its key (i.e. `ENG` for the UK)
+
+## `tax_base` (decimal)
+
+UNCLEAR, it is NOT total income and is different from total income even if all taxes are set to their highest value and admin efficiency is at 100%
+
+## `flags` (Array of key-boolean pairs)
+
+Flags set by the nation to determine if events have happened
+
+TODO: list out all flags
+
+## `variables` (Array)
+
+UNCLEAR
+
+## `capital` (int)
+
+Province ID of the capital of the country
+
+## `technology` (Array of key-array pairs)
+
+List of technologies discovered by the country, techs not discovered are not listed. Keys take on the name of tech (i.e. `machine_guns`) and values are always the array `{1 0.000}`
+
+
+## `research` (Array of key-value pairs)
+
+Stores currently active research
+
+### `technology` (non-quoted string)
+
+String stating the name of the technology currently being researched
+
+### `cost` (decimal)
+
+Despite the name, represents the amount of research points *already* allocated to the current tech. Specified to three decimal places
+
+### `max_producing` (decimal)
+
+The total number of research point required to finish the tech, *from scratch*. As in, this does not change with the value of `cost`. Specified to three decimal places
+
+
+### `last_spending` (decimal)
+
+Daily generated research points
+
+### `active` (boolean)
+
+Indicates if research is currently active. Not clear what this will do if set to `no`
+
+## `last_reform` (date)
+
+Date last reform was passed
+
+## `last_election` (date)
+
+Date last election occurred
+
+## Reforms
+
+reforms each have their separate key which is assign to a non-quoted string, i.e. `wage_reform=acceptable_minimum_wage`
+
+TODO: list out names of keys and possible values
+
+## `upper_house` (array of key-decimal pairs)
+
+distribution of the upper house indexed by ideology name, (i.e. `liberal`)
+
+## `last_lost_war` (date)
+
+Unclear if date when the last war the country lost stared or ended.
+
+## `ruling_party` (int)
+
+ID of currently ruling party, see `active_party` below for details
+
+## `active_party` (int)
+
+Repeatable key showing what parties are currently active. Importantly, the IDs of parties do NOT match the ideology ids in the POP data structure. Unknown how these IDs are generated, specially for countries with more than two political parties of the same ideology.
+
+## `naval_need` (array of key-decimal pairs)
+
+UNCLEAR, it does not seem to be either the amount of naval goods bought since that is `naval_supply_cost`
+
+## `land_supply_cost` (array of key-decimal pairs)
+
+Seems to be the *current day's* cost of supplying land units, as it does not match the "Last Day's estimated costs" shown on the Budget screen
+
+## `naval_supply_cost` (array of key-decimal pairs)
+
+Same as above but for navy
+
+## `diplomatic_points` (decimal)
+
+Amount of diplo points saved up, specified to three decimal places
+
+## `religion` (string)
+
+Accepted religion of the country
+
+## `government` (non-quoted string)
+
+Country's form of government (i.e. `hms_government`)
+
+## `plurality` (decimal)
+
+Plurality of the country, specified to three decimal places
+
+
+## `revanchism` (decimal)
+
+Revanchism of the country, specified to three decimal places
+
+
+## `modifier` (array of key-value pairs)
+
+Has string-valued `modifier` stating the modifier name and `date` which takes on strings that don't follow the usual date format. It consists of three numbers separated by periods, i.e. `"1.7.8"`
+
+This key can repeat to show different modifiers
+
+## `rich_tax`, `middle_tax`, and `poor_tax` (array of key-value pairs)
+
+Represent the current tax levels for each strata
+
+### `current` (decimal)
+
+Current tax level as number between `0.00000` and `1.00000`
+
+### `tax_income` (array of decimals)
+
+12-entry array containing the amount of tax revenue obtained from each type of POP. The indexes of the array correspond to POP types
+
+The pops not included in the strata will be set to `0.00000`. For example, in the `poor_tax.tax_income` array, the index representing capitalists will be have the value `0.00000`, but will be filled in the `rich_tax.tax_income` array. The index representing slaves will also be `0.00000` in countries where slavery is banned
+
+TODO: list which indexes correspond to which pop types
+
+### `tax_eff` (array of decimals)
+
+As above but for tax efficency. Values of this array are not percentages.
+
+### `total` (decimal)
+
+UNCLEAR, as it doesn't seem to correspond to the total tax revenue for the strata
+
+### `rangeLimitMax` (decimal)
+
+Maximum allowed tax as a percent
+
+### `rangeLimitMin` (decimal)
+
+Minimum allowed tax as a percent
+
+### `max_tax` (int)
+
+Seems to be an older, now unused form of `rangeLimitMin`
+
+### `min_tax` (int)
+
+Seems to be an older, now unused form of `rangeLimitMax`
+
+## `education_spending`, `crime_fighting`, `social_spending`, `military_spend` (Array of key-decimal pairs)
+
+Stores information about sliders on the budget screen. `crime_fighting` is referred to as "Administration" in game
+
+### `settings` (decimal)
+
+Current percent allocation to the spending catagory
+
+
+### `temp_settings` (decimal)
+
+UNCLEAR, maybe used to store settings when ruling party changes?
+
+### `factor` (decimal)
+
+UNCLEAR, seems to always be set to `0.00998`
+
+### `reserve` (decimal)
+
+UNCLEAR, seems to always be set to `0.00000`
+
+
+### `maxValue` (decimal)
+
+UNCLEAR, might be a overflow prevention variable
+
+### `rangeLimitMax` (decimal)
+
+maximum level slider is allowed to be set to
+
+### `rangeLimitMin` (decimal)
+
+Minimum level slider is allowed to be set to
+
+###  `max_tax`, `min_tax` (int)
+
+Seems to be unused as in the tax arrays
+
+## `leader` (array of key-value pairs)
+
+Repeated key showing all (currently alive?) leaders 
+
+
+
+
+
+ 
+
+
