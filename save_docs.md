@@ -13,7 +13,7 @@ Decmials are up to 5 decimal palces, i.e. `148.68872`
 
 Dates are given as strings in `"YYYY.M.D"` format
 
-Unlike `json`, keys are NOT unique. This fact is used to list multiple instances of the same class of object within an array. For example 
+Unlike `json`, keys are NOT unique. This fact is used to list multiple instances of the same class of object within an array. For example `last_price_history` is listed multiple times so that the game can display the price history.
 
 ## Production tab
 
@@ -69,11 +69,13 @@ UNCLEAR, does not seem to be a province ID
 
 ## `flags` (array of keys)
 
-list of flags that have been enabled. It seems that the Clausewitz engine 
-can not support arrays of variables so flags need to specified as the 
-`flagname=yes`
+list of flags that have been enabled. It seems that the Clausewitz engine can not support arrays of variables so flags need to specified as `flagname=yes`. Seems to be only used for canals.
 
-TODO: document a list of all flags
+List of flags:
+
+- 'kiel_canal'
+- 'panama_canal'
+- 'suez_canal'
 
 ## `gameplaysettings` (array of keys)
 
@@ -447,10 +449,13 @@ Probably number of individuals emigrating a province outside of the country
 
 Tag specified for the *home country* of the pop, which need not exist. For example, Polish pops in Russia can have `movement_tag="PLC"` even if the PLC hasn't been released.  
 
-## `colonial_migration` (int)
+### `colonial_migration` (int)
 
 UNCLEAR
 
+### `assimilated` (int)
+
+UNCLEAR
 
 ### `artisans` exclusive keys
 
