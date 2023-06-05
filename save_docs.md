@@ -317,15 +317,22 @@ Loyalty to a specific _ideology_ rather than party, despite the name
 
 Has a string-valued `ideology` to specify ideology and decimal-valued `loyalty_value` to specify the value.
 
+## `modifier` (Array of key-value pairs)
+
+Active province modifier. has two keys `modifier` (string) and `date` (date). Unknown if date is start date or expiration date
+
+TODO: list all modifiers avaliable
+
+
 ## POP Data Sub-Structure
 
-POPs are separately indexed by POP type, define within the array that defines the provinces the pop is located in. So every unique POP in a province has a separate Array to define them within the province structure. 
+POPs are separately indexed by POP type, defined within the array that defines the provinces the pop is located in. So every unique POP in a province has a separate Array to define them within the province structure. 
 
 Except for `artisans`, pops seem to share the same keys.
 
 ### `id` (int)
 
-UNCLEAR, perhaps every pop has unique ID
+UNCLEAR, perhaps every pop has a unique ID
 
 ### `size` (int)
 
@@ -403,6 +410,9 @@ Percentage of needs filled, always less than 1. It seems that if needs are 100% 
 
 UNCLEAR
 
+### `converted` (int)
+
+UNCLEAR
 
 ### `random` (int)
 
@@ -416,14 +426,31 @@ UNCLEAR
 
 displayed rebel faction/voting issue on pop screen
 
-### `days_of_loss` (int) (Craftsmen and clerks only)
+### `days_of_loss` (int)
 
-UNCLEAR, might be days of unemployment since it seems to be craftsmen-exclusive
+UNCLEAR, might be days of unemployment since it seems to be craftsmen-exclusive. Seems to be lower-class exclusive (craftsman, farmers, clerks)
 
 
 ### `faction` (array of key-int pairs)
 
 Probably indicates rebel faction, has `id` and `type` as keys
+
+### `local_migration` (int)
+
+Probably number of individuals emigrating to another province within the country
+
+### `external_migration` (int)
+
+Probably number of individuals emigrating a province outside of the country
+
+### `movement_tag` (string)
+
+Tag specified for the *home country* of the pop, which need not exist. For example, Polish pops in Russia can have `movement_tag="PLC"` even if the PLC hasn't been released.  
+
+## `colonial_migration` (int)
+
+UNCLEAR
+
 
 ### `artisans` exclusive keys
 
@@ -548,7 +575,9 @@ Duplicate of province id
 
 ### `country` (string)
 
-Tag of the country that owns the factory
+Tag of the country that owns(?) the factory.
+
+TODO: verify this still the case for 
 
 ### `building` (int)
 
@@ -556,7 +585,7 @@ presumably building type ID
 
 ### `input_goods` (Array of key-value pairs)
 
-Information about factory input and monartary balances
+Information about factory input and monetary balances
 
 #### `goods_demand` (Array of key-decimal pairs)
 
@@ -565,3 +594,56 @@ Information about factory input and monartary balances
 
 #### `money` (decimal)
 
+
+
+## `military_construction` (Array of key-value pairs)
+
+list information about units being constructed in the province
+
+### `id` (Array of key-int pairs)
+
+UNCLEAR, has keys `id` and `type`
+
+### `start_date` (date)
+
+The date that construction started
+
+### `date` (date)
+
+Date that the construction is set to finish
+
+### `location` (int)
+
+Province id
+
+### `country` (string)
+
+Tag of the country constructing a unit
+
+### `name` (string)
+
+Name of the unit
+
+### `type` (string)
+
+Unit type
+
+### `unit` (Array of key-int pairs)
+
+UNCLEAR, has keys `id` and `type`
+
+### `regiment` (Array of key-int pairs)
+
+UNCLEAR, has keys `id` and `type`
+
+### `pop` (Array of key-int pairs)
+
+UNCLEAR, likely points to the pop id but `type` is unclear, has keys `id` and `type`
+
+### `count` (int)
+
+UNCLEAR, but probably just the number of troops ordered?
+
+### `rally_point` (int)
+
+UNCLEAR, has values `-1`, `0` and `1`
