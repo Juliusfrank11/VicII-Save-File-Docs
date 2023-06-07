@@ -46,7 +46,7 @@ def make_json_saves():
 
         current_level = 0
         previous_level = 0
-        for line in lines:
+        for n, line in enumerate(lines):
             current_level = line.count("\t")
             if current_level < previous_level:
                 for i in range(previous_level, max_level):
@@ -79,7 +79,24 @@ def make_json_saves():
                                     exec(f"leaf= save_dict{key_string}")
                                     i += 1
                         except KeyError:
-                            code = f"save_dict{key_string} = " + "{}"
+                            # scan for array
+                            j = 1
+                            array_found = False
+                            while "=" not in lines[n + j]:
+                                if lines[n + j].split():
+                                    if all(
+                                        [
+                                            c in "0123456789. "
+                                            for c in lines[n + j].strip()
+                                        ]
+                                    ):
+                                        array = lines[n + j].strip().split()
+                                        code = f"save_dict{key_string} = {array}"
+                                        array_found = True
+                                        break
+                                j += 1
+                            if not array_found:
+                                code = f"save_dict{key_string} = " + "{}"
 
                     exec(code)
                 except ValueError:
