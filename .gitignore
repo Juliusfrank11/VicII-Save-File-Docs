@@ -155,3 +155,4 @@ cython_debug/
 tabbed_saves/
 parsers.ipynb
 json_saves/
+.DS_Store

@@ -3,7 +3,7 @@
 # Notes
 
 Sections are listed as they appear in the save file strucutre, so first 
-comes global gamestate data, then province data etc.
+comes global gamestate data, then province data etc. Not all values are listed in the order they appear in the save file, this will be change if it turns out that they must be in order to generate a save file.
 
 ## Syntax
 
@@ -30,6 +30,10 @@ functionality was scrapped.
 
 It seems that a lot of these metrics are duplicated on the Trade screen as 
 well.
+
+## `id`
+
+There is an array defined in many structures called `id` with the keys `id` and `type`. This seems to be used so that structures can reference each other (for example, assign pops to a regiment). 
 
 # Macro Game State Data
 
@@ -657,6 +661,10 @@ UNCLEAR, has values `-1`, `0` and `1`
 
 Arrays that define country data have the country's three-letter tag as its key (i.e. `ENG` for the UK)
 
+## `human` (boolean)
+
+`yes` if country is player countrolled
+
 ## `tax_base` (decimal)
 
 UNCLEAR, it is NOT total income and is different from total income even if all taxes are set to their highest value and admin efficiency is at 100%
@@ -674,6 +682,10 @@ UNCLEAR
 ## `capital` (int)
 
 Province ID of the capital of the country
+
+## `ignore_descision` (string)
+
+Name of ignored decisions. assuming This key is repeatable
 
 ## `technology` (Array of key-array pairs)
 
@@ -729,7 +741,7 @@ Unclear if date when the last war the country lost stared or ended.
 
 ## `ruling_party` (int)
 
-ID of currently ruling party, see `active_party` below for details
+ID of the currently ruling party, see `active_party` below for details
 
 ## `active_party` (int)
 
@@ -853,14 +865,187 @@ Minimum level slider is allowed to be set to
 
 Seems to be unused as in the tax arrays
 
-## `leader` (array of key-value pairs)
+## `overseas_penalty` (decimal)
 
-Repeated key showing all (currently alive?) leaders 
+UNCLEAR
+
+## `leadership` (decimal)
+
+Leadership points of the country
+
+## `auto_assign_leaders` (boolean)
+
+Auto-assign leaders setting
+
+## `auto_create_leaders` (boolean)
+
+Auto-create leaders setting
+
+## `leader` (Array of key-value pairs)
+
+contains information on (currently active?) leaders of the country. Repeated key
+
+### `name` (string)
+
+Name of the leader
+
+### `date` (date)
+
+Presumably, the date the leader was generated
+
+### `type` (non-quoted string)
+
+Type of leader, either `land` or `sea`
+
+### `personality` (string)
+
+Personality of general
+
+TODO: list all personality values
 
 
+### `background` (string)
+
+Background of the general
+
+TODO: list values
 
 
+### `country` (string)
 
- 
+Country the general belongs to
 
+
+### `picture` (string)
+
+Image file used for the leader
+
+
+### `prestige` (decimal)
+
+Prestige of the leader, specified to three decimal places
+
+### `id` (Array of key-int pairs)
+
+UNCLEAR, has keys `id` and `type`
+
+
+## `army` and `navy` (Array of key-value pairs)
+
+repeated key containing data on land armies and naval units
+
+### `id` (array of key-int pairs)
+
+UNCLEAR, has keys `id` and `type`
+
+### `name` (string)
+
+Unit name
+
+### `leader` (array of key-int pairs)
+
+Presumably used to link the leader to the army, has keys `id` and `type`. 
+
+### `previous` (int)
+
+Province ID of the last province the unit was placed at
+
+### `movement_progress` (3 sig fig decimal)
+
+Movement progress of troop
+
+### `location` (int)
+
+Province ID of the province the unit is currently located in. If a navy is docked in a port, this is set to land province's ID
+
+### `dig_in_last_date`
+
+UNCLEAR, date when dig in progress progressed last?
+
+### `supplies` (3 sig fig decimal)
+
+Percent of needed supplies received by the unit
+
+### `regiment` and `ship` (array of key-value pairs)
+
+repeated key storing information about the regiments 
+
+### `at_sea` (int, navy only)
+
+If unit is currently in a sea province
+
+### `no_supply_days` (int, navy only)
+
+Naval attrition value?
+
+#### `id` (array of key-int pairs)
+
+Identifier for the regiment
+
+#### `name`
+
+Regiment name
+
+#### `pop` (`id` reference) (`army` only)
+
+Reference to a POP ID
+
+#### `organisation` (3 sig fig decimal)
+
+Organization value of the regiment
+
+#### `strength` (3 sig fig decimal)
+
+Strength value of the regiment
+
+#### `experience` (3 sig fig decimal)
+
+Experience value of the regiment
+
+#### `count` (int)
+
+Always set to `1`
+
+#### `type` (non-quoted string)
+
+Unit type of regiment/ship
+
+## Relations
+
+relations with countries has indexed by the three-letter tag of the country
+
+Unlike the top-level arrays, countries that don't exist in the save file are not included as keys within these arrays.
+
+The array of the tag of the country just has the single pair `value=0`
+
+### `value` (int)
+
+Relations value to the country the relation array belongs to
+
+### `last_send_diplomat` (date)
+
+Date a diplomat was last sent to coutnry
+
+### `level_changed_date` (date)
+
+Date the influence level with the country was last changed
+
+### `level` (int)
+
+Influence level
+
+TODO: list what values correspond to what influence lever
+
+### `influence_value` (3 sig fig decimal)
+
+Influence points value 
+
+### `last_war` (date)
+
+Date that last war with country (ended?) (started?)
+
+
+### `truce_until` (date)
+
+Date truce expires with country
 
