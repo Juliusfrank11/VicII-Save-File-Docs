@@ -9,12 +9,12 @@ def make_tabbed_saves():
         os.mkdir("tabbed_saves")
 
     for save_filename in os.listdir("saves"):
-        # I'm sure ignoring utf errors will not do anything bad
-        # ^ clueless
-        with open(f"saves/{save_filename}", "r", errors="ignore") as save:
+        with open(f"saves/{save_filename}", "r", encoding="windows-1252") as save:
             lines = [l.strip() for l in save.readlines()]
 
-        with open(f"tabbed_saves/{save_filename}", "w") as tabbed_save:
+        with open(
+            f"tabbed_saves/{save_filename}", "w", encoding="windows-1252"
+        ) as tabbed_save:
             level = 0
             for n, line in enumerate(lines):
                 tabbed_save.write("".join(["\t" for i in range(level)]))
@@ -36,7 +36,9 @@ def make_json_saves():
         os.mkdir("json_saves")
 
     for save_filename in os.listdir("tabbed_saves"):
-        with open(f"tabbed_saves/{save_filename}", "r") as save:
+        with open(
+            f"tabbed_saves/{save_filename}", "r", encoding="windows-1252"
+        ) as save:
             lines = [l.replace("\n", "") for l in save.readlines()]
 
         save_dict = {}
@@ -80,6 +82,7 @@ def make_json_saves():
                                     i += 1
                         except KeyError:
                             # scan for array
+                            # TODO: add support for non-numeric arrays
                             j = 1
                             array_found = False
                             while "=" not in lines[n + j]:

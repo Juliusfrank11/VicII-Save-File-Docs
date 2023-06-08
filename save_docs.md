@@ -1049,3 +1049,120 @@ Date that last war with country (ended?) (started?)
 
 Date truce expires with country
 
+## `active_inventions`, `possible_inventions`, `illegal_inventions` (array of ints)
+
+List IDs of active (already discovered), possible, and illegal (not possible) inventions
+
+## `government_flag` (array of string-string pairs)
+
+UNCLEAR, Seems to have the previous government type as they "key" and current government type as the "value" for countries that have had a revolution
+
+## `last_mission_cancel` (date)
+
+
+UNCLEAR, unused feature?
+
+## `ai` and `ai_hard_strategy` (array of key-value pairs)
+
+Stores variables for AI depending on difficulty. 
+
+### `initialized` (boolean)
+
+If the AI has been activated (at least once?) in the campaign
+
+### `consolidate` (boolean)
+
+UNCLEAR
+
+### `date` (date)
+
+UNCLEAR
+
+### `static` (boolean)
+
+UNCLEAR
+
+### `personality` (non-quoted string)
+
+AI behaviour characteristic, unknown what these value mean exactly
+
+TODO: list all values
+
+### `conquer_prov` (array of key-int pairs)
+
+Repeated key to list provinces that the AI show want to conquer, like an implicit "strategic interest" from EU4. Has keys `id` for the province ID and `value`
+
+
+### `threat`, `antagonize`, `befriend`, `protect` and `rival` (array of key-value pairs)
+
+Repeated keys for relation attributes to other countries. Has keys `id` with the three-letter tag of the country and `value` which is given an int (not clear if bounded)
+
+Countries can repeat for at least some attitudes, for example `threat` and `rival`. Not clear if any attributes are actually mutually exclusive.
+
+
+## `foreign_investment` (array of decimals)
+
+UNCLEAR, notiable for using index of an array instead of country tags if this is listing out foreign investment *to* countries
+
+## `schools` (string)
+
+Research school of the country
+
+## `primary_culture` (string)
+
+Primary culture of the country
+
+
+## `culture` (array of strings)
+
+Accepted cultures of the country.
+
+## `prestige` (3 sigfig decimal)
+
+Prestige of the country
+
+## `bank` (array of key-decimal pairs)
+
+UNCLEAR, has keys `money` and `money_lent`
+
+## `last_bankrupt` (date)
+
+Date the country last went bankrupt, set to `"1.1.1"` if the country has never gone bankrupt
+
+## `movement` (array of key-value pairs)
+
+Repeated key showing active movements in the country, has string-valued `issue` stating the reform and decimal-valued `cache` which is unclear
+
+## `stockpile` (array of key-decimal pairs)
+
+Stockpile of goods (including non-military goods). Goods with no stockpile are not included as keys
+
+## `national_value` (string)
+
+national value of the country
+
+## `buy_domestic` (array)
+
+UNCLEAR, always empty in samples, maybe a player setting?
+
+## `trade` (array of arrays of key-value pairs)
+
+Trade settings, indexed by the name of the good. The arrays of goods have keys:
+
+- `limit` (decimal)
+- `buy` (boolean)
+- `automate_trade` (boolean)
+
+## `civilized` (boolean)
+
+If the coutnry is civilized, there is no special value for partially westernized nations
+
+## `last_greatness_date` (date)
+
+Last date when the country was a great power. Current date if country is a great power
+
+## `state` (array of key-value pairs)
+
+stores state information, including building informaiton
+
+
