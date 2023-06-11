@@ -9,11 +9,16 @@ def make_tabbed_saves():
         os.mkdir("tabbed_saves")
 
     for save_filename in os.listdir("saves"):
-        with open(f"saves/{save_filename}", "r", encoding="windows-1252") as save:
+        with open(
+            f"saves/{save_filename}", "r", encoding="windows-1252", errors="ignore"
+        ) as save:
             lines = [l.strip() for l in save.readlines()]
 
         with open(
-            f"tabbed_saves/{save_filename}", "w", encoding="windows-1252"
+            f"tabbed_saves/{save_filename}",
+            "w",
+            encoding="windows-1252",
+            errors="ignore",
         ) as tabbed_save:
             level = 0
             for n, line in enumerate(lines):
@@ -37,7 +42,10 @@ def make_json_saves():
 
     for save_filename in os.listdir("tabbed_saves"):
         with open(
-            f"tabbed_saves/{save_filename}", "r", encoding="windows-1252"
+            f"tabbed_saves/{save_filename}",
+            "r",
+            encoding="windows-1252",
+            errors="ignore",
         ) as save:
             lines = [l.replace("\n", "") for l in save.readlines()]
 
@@ -105,9 +113,10 @@ def make_json_saves():
                 except ValueError:
                     print(f"ValueError: {line}")
             previous_level = current_level
-        json.dump(
-            save_dict, open(f"json_saves/{save_filename.replace('.v2','.json')}", "w")
-        )
+        with open(
+            f"json_saves/{save_filename.replace('.v2','.json')}", "w"
+        ) as json_save:
+            json.dump(save_dict, json_save)
         print(f"Converted {save_filename} to json save")
 
 
