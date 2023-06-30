@@ -1155,7 +1155,7 @@ Trade settings, indexed by the name of the good. The arrays of goods have keys:
 
 ## `civilized` (boolean)
 
-If the coutnry is civilized, there is no special value for partially westernized nations
+If the country is civilized, there is no special value for partially westernized nations
 
 ## `last_greatness_date` (date)
 
@@ -1163,6 +1163,78 @@ Last date when the country was a great power. Current date if country is a great
 
 ## `state` (array of key-value pairs)
 
-stores state information, including building informaiton
+stores state information, including building information
 
+### `id` (identifier)
+UNCLEAR, but assuming `id.id` is the state id?
 
+### `provinces` (array of ints)
+ids of provinces included in the state
+### `state_buildings` (repeated array of key-value pairs)
+Contains factory information
+
+#### `building` (string)
+Type of factory
+#### `level` (int)
+Factory level
+#### `stockpile` (array of key-int pairs)
+Current stockpile of factory inputs
+#### `employment` (array of key-value pairs)
+Contains employment information
+##### `state_province_id` (int)
+UNCLEAR
+###### `employees` (array of key-value pairs)
+UNCLEAR, has an int valued `count` along with the repeated array `province_pop_id` with int-valued keys 
+
+- `province_id`
+- `index`
+- `type` 
+
+#### `money` (float)
+#### `last_spending` (float)
+#### `last_income` (float)
+#### `pops_paychecks` (float)
+#### `last_investment` (float)
+#### `unprofitable_days` (int)
+#### `subsidised` (boolean)
+If the factory is subsidized or not
+#### `leftover` (float)
+#### `injected_money` (float)
+#### `injected_days` (int)
+#### `produces` (float)
+#### `profit_history_days` (int)
+#### `profit_history_current` (int)
+#### `profit_history_entry` (array of ints)
+### `savings` (float)
+
+### `interest` (float)
+### `flashpoint` (boolean)
+If the state can spawn a crisis
+### `crisis` (string)
+Tag of the country that would receive territory if the current owner backs down from a crisis
+## `badboy` (3 sigfig decimal)
+Infamy
+## `trade_cap_land` (decimal)
+## `trade_cap_naval` (decimal)
+## `trade_cap_projects` (decimal)
+## `max_tariff` (decimal)
+## `domestic_supply_poll` (array of key-decimal pairs)
+Keys are the RGO name
+## `sold_supply_poll` (array of key-decimal pairs)
+## `domestic_demand_pool` (array of key-decimal pairs)
+## `actual_sold_domestic` (array of key-decimal pairs)
+## `saved_country_supply` (array of key-decimal pairs)
+## `max_bought` (array of key-decimal pairs)
+## `national_focus` (array of string-string pairs)
+oddly enough, the "strings" used as keys are actually ints (state ids?) wrapped in quotes
+## `influence` (array of string-string pairs)
+also odd, the keys are quoted country tags, but the values are quoted ints
+## `expenses` (array of decimals)
+## `incomes` (array of decimals)
+## `interesting_countries` (array of ints)
+## `next_quarterly_pulse` (date)
+## `next_yearly_pulse` (date)
+## `suppression` (3 sigfig decimal)
+## `railroads` (repeated array of key-array pairs)
+Contains an array called `path` whos value is an array of province ids
+## `is_releasable_vassal` (boolean)
