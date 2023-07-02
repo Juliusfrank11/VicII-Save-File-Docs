@@ -97,7 +97,7 @@ def make_json_saves():
                                 if lines[n + j].split():
                                     if all(
                                         [
-                                            c in "0123456789. "
+                                            c in "0123456789.- "
                                             for c in lines[n + j].strip()
                                         ]
                                     ):

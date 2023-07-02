@@ -1238,3 +1238,52 @@ also odd, the keys are quoted country tags, but the values are quoted ints
 ## `railroads` (repeated array of key-array pairs)
 Contains an array called `path` whos value is an array of province ids
 ## `is_releasable_vassal` (boolean)
+UNCLEAR, because it is still `yes` even if the country exists
+# `rebel_faction` (repeated array of key-value pairs)
+stores information about (active?) rebel factions in all countries
+## `id` (identifier)
+## `type` (quoted string)
+Rebel type
+## `name` (quoted strng)
+Name of the rebel faction
+## `country` (tag)
+country the faction is active in
+## `independence` (tag or `"---"`)
+Country that will gain territory if rebels succeed 
+## `culture` (quoted string)
+UNCLEAR, this seems to not have an impact because of the `pop` repeated identifier within the `rebel_faction` structure
+## `religion` (quoted string)
+UNCLEAR, this seems to not have an impact because of the `pop` repeated identifier within the `rebel_faction` structure
+## `government` (quoted string)
+govenment type the rebels will flip the country to win if they win
+## `province` (int)
+UNCLEAR
+## `leader` (identifier)
+## `organization` (decimal)
+## `pop` (repeated identifier)
+## `unit_names` (array of key-value pairs)
+has sub-dictionary `data` with `int`-valued `count` and repeated array[int] valued `id`
+## `next_unit` (int)
+UNCLEAR
+# `diplomacy` (array if key-array pairs)
+Stores data on diplomacy. Has three keys for sub-arrays 
+- `alliance` and `vassal` with key-value pairs:
+	- `first` (tag), tag of overload if `vassal`
+	- `second` (tag), tag of vassal if `vassal`
+	- `end_date` (date)
+	- `start_date`
+- `casus_belli` with key-value pairs
+	- `type` (quoted string)
+	- `first` (tag)
+	- `second` (tag)
+	- `start_date` (date)
+# `combat`
+stores data on current battle and occupations
+# `active_war` (repeated dictionary)
+# `previous_war` (repeated dictionary) 
+# `invention` (array of ints)
+# `great_nations` (array of ints)
+# `outlier` (array of ints)
+# `news_collector` (dictionary)
+# `crisis manager` (dictionary)
+# `region`(repeated dictionary) 
