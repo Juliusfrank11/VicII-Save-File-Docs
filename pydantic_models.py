@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import Annotated, Literal, Union, Tuple, R
+from typing import Annotated, Literal, Union, Tuple
 from decimal import Decimal
 
 # pesudo-primitive" PDX-exclusive classes
