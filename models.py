@@ -1,73 +1,24 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from enum import Enum
 from datetime import date
-from typing import Annotated, Literal, Union, Tuple
+from typing import Annotated, Literal, Union, Tuple, Optional
 from decimal import Decimal
+from validators import make_string_unquoted, validate_pdx_date
 
 # pesudo-primitive" PDX-exclusive classes
-Tag = Annotated[str, Field(regex=r"\b([A-Z]{3}|D[0-9]{2})\b")]
 ThreeSigFigDecimal = Annotated[Decimal, Field(decimal_places=3)]
 FiveSigFigDecimal = Annotated[Decimal, Field(decimal_places=5)]
 QuotedString = Annotated[str, Field(regex='(?!"["]*"$).*')]
 UnquotedString = Annotated[str, Field(regex='^(?!"[^"]*"$).*')]
+QuotedTag = Annotated[QuotedString, Field(regex=r"\b([A-Z]{3}|D[0-9]{2}|---)\b")]
+UnquotedTag = Annotated[UnquotedString, Field(regex=r"\b([A-Z]{3}|D[0-9]{2}|---)\b")]
+PDXDate = Annotated[str, Field(regex=r"[0-9]+\.[0-9]+\.[0-9]+")]
 Variable = str
 Flag = Annotated[Variable, "global event flag"]
 RGO = Annotated[Variable, "RGO name"]
 Tech = Annotated[Variable, "Technology"]
 Ideology = Annotated[Variable, "Ideology"]
 Repeated = list  # used for keys that repeat
-
-
-class RGO(BaseModel):
-    aeroplanes = "aeroplanes"
-    ammunition = "ammunition"
-    artillery = "artillery"
-    automobiles = "automobiles"
-    barrels = "barrels"
-    canned_food = "canned_food"
-    cattle = "cattle"
-    cement = "cement"
-    clipper_convoy = "clipper_convoy"
-    coal = "coal"
-    coffee = "coffee"
-    cost = "cost"
-    cotton = "cotton"
-    dye = "dye"
-    electric_gear = "electric_gear"
-    explosives = "explosives"
-    fabric = "fabric"
-    fertilizer = "fertilizer"
-    fish = "fish"
-    fruit = "fruit"
-    fuel = "fuel"
-    furniture = "furniture"
-    glass = "glass"
-    grain = "grain"
-    iron = "iron"
-    liquor = "liquor"
-    lumber = "lumber"
-    luxury_clothes = "luxury_clothes"
-    luxury_furniture = "luxury_furniture"
-    machine_parts = "machine_parts"
-    oil = "oil"
-    opium = "opium"
-    paper = "paper"
-    precious_metal = "precious_metal"
-    radio = "radio"
-    regular_clothes = "regular_clothes"
-    rubber = "rubber"
-    silk = "silk"
-    small_arms = "small_arms"
-    steamer_convoy = "steamer_convoy"
-    steel = "steel"
-    sulphur = "sulphur"
-    tea = "tea"
-    telephones = "telephones"
-    timber = "timber"
-    tobacco = "tobacco"
-    tropical_wood = "tropical_wood"
-    wine = "wine"
-    wool = "wool"
 
 
 class Convoys(BaseModel):
@@ -82,7 +33,7 @@ class WorldMarket(BaseModel):
     supply_pool: dict[RGO, FiveSigFigDecimal]
     last_supply_pool: dict[RGO, FiveSigFigDecimal]
     price_history: Repeated[dict[RGO, FiveSigFigDecimal]]
-    price_history_last_update: date
+    price_history_last_update: PDXDate
     price_change: dict[RGO, FiveSigFigDecimal]
     discovered_goods: dict[RGO, float]
     actual_sold: dict[RGO, FiveSigFigDecimal]
@@ -94,7 +45,7 @@ class WorldMarket(BaseModel):
 
 
 class IdeologyEnabled(BaseModel):
-    enabled = date
+    enabled = PDXDate
 
 
 class Identifier(BaseModel):
@@ -189,8 +140,8 @@ class PartyLoyalty(BaseModel):
 
 class BuildingConstruction(BaseModel):
     id: Identifier
-    state_date: date
-    date: date
+    state_date: PDXDate
+    date: PDXDate
     location: Annotated[int, "Province ID"]
     country: Tag
     building: int
@@ -204,8 +155,8 @@ class MilitaryInputGoodsData(BaseModel):
 
 class MilitaryConstruction(BaseModel):
     id: Identifier
-    start_date: date
-    date: date
+    start_date: PDXDate
+    date: PDXDate
     location: Annotated[int, "Province ID"]
     country: Tag
     input_goods: MilitaryInputGoodsData
@@ -231,8 +182,8 @@ class Province(BaseModel):
     rgo: Employment
     life_rating: int
     infrastructure: ThreeSigFigDecimal
-    last_imigration: date
-    last_controller_change: date
+    last_imigration: PDXDate
+    last_controller_change: PDXDate
     unit_names: UnitNameData
     party_loyalty: Repeated[PartyLoyalty]
     nationalism: ThreeSigFigDecimal
@@ -251,7 +202,7 @@ class Research(BaseModel):
 
 class CountryModifier(BaseModel):
     modifier: str
-    date: date
+    date: PDXDate
 
 
 class TaxBracket(BaseModel):
@@ -279,7 +230,7 @@ class SpendingSetting(BaseModel):
 
 class Leader(BaseModel):
     name: str
-    date: date
+    date: PDXDate
     type: Annotated[Variable, "`land` or `sea`"]
     personality: str
     background: str
@@ -311,7 +262,7 @@ class Army(BaseModel):
     previous: Annotated[int, "Province ID"]
     movement_progress: ThreeSigFigDecimal
     location: Annotated[int, "Province ID"]
-    dig_in_last_date: date = date(2, 1, 1)
+    dig_in_last_date: PDXDate = "2.1.1"
     supplies: ThreeSigFigDecimal
     regiment: Repeated[Regiment]
 
@@ -323,18 +274,18 @@ class Navy(BaseModel):
     previous: Annotated[int, "Province ID"]
     movement_progress: ThreeSigFigDecimal
     location: Annotated[int, "Province ID"]
-    dig_in_last_date: date = date(2, 1, 1)
+    dig_in_last_date: PDXDate = "2.1.1"
     supplies: ThreeSigFigDecimal
     ship: Repeated[Ship]
 
 
 class ForeignRelation(BaseModel):
     value: int
-    last_send_diplomat: date
-    last_war: date
-    truce_until: date
+    last_send_diplomat: PDXDate
+    last_war: PDXDate
+    truce_until: PDXDate
     level: int
-    level_changed_date: date
+    level_changed_date: PDXDate
     influence_value: ThreeSigFigDecimal
 
 
@@ -351,7 +302,7 @@ class DiplomaticAttitude(BaseModel):
 class AIStrategy(BaseModel):
     initialized: bool
     consolidate: bool
-    date: date
+    date: PDXDate
     static: bool
     personality: Variable
     conquer_prov: Repeated[ProvinceDesire]
@@ -410,8 +361,8 @@ class Nation(BaseModel):
     research_points: ThreeSigFigDecimal
     technology: dict[Tech, Tuple]
     research: Research
-    last_reform: date
-    last_election: date
+    last_reform: PDXDate
+    last_election: PDXDate
     wage_reform: Variable
     work_hours: Variable
     safety_regulations: Variable
@@ -427,7 +378,7 @@ class Nation(BaseModel):
     trade_unions: Variable
     political_parties: Variable
     upper_house: dict[Ideology, FiveSigFigDecimal]
-    last_party_change: date
+    last_party_change: PDXDate
     ruling_party: int
     active_party: int
     naval_need: Convoys
@@ -458,7 +409,7 @@ class Nation(BaseModel):
     possible_inventions: list[int]
     illegal_inventions: list[int]
     government_flag: dict[str, str]
-    last_mission_cancel: date = date(1, 1, 1)
+    last_mission_cancel: PDXDate = date(1, 1, 1)
     ai_hard_strategy: AIStrategy
     ai_strategy: AIStrategy
     foreign_investment: list[FiveSigFigDecimal]
@@ -467,7 +418,7 @@ class Nation(BaseModel):
     culture: list[str] = []
     bank: NationalBank
     money: FiveSigFigDecimal
-    last_bankrupt: date = date(1, 1, 1)
+    last_bankrupt: PDXDate = date(1, 1, 1)
     prestige: ThreeSigFigDecimal
     movement: Repeated[Union[PoliticalMovement, IndependenceMovement]]
     stockpile: dict[RGO, FiveSigFigDecimal]
@@ -491,8 +442,8 @@ class Nation(BaseModel):
     expenses: list[FiveSigFigDecimal]
     incomes: list[FiveSigFigDecimal]
     interesting_countries: list[int]
-    next_quarterly_pulse: date
-    next_yearly_pulse: date
+    next_quarterly_pulse: PDXDate
+    next_yearly_pulse: PDXDate
     suppression: ThreeSigFigDecimal
     railroads = Repeated[Railroad]
     is_releasable_vassal: bool = True
@@ -516,22 +467,22 @@ class RebelFaction(BaseModel):
 class Alliance(BaseModel):
     first: Tag
     second: Tag
-    end_date: date = date(1949, 1, 1)
-    start_date: date
+    end_date: PDXDate = date(1949, 1, 1)
+    start_date: PDXDate
 
 
 class Vassalage(BaseModel):
     first: Tag  # Overlord
     second: Tag  # Vassal
-    end_date: date = date(1949, 1, 1)
-    start_date: date = date(1795, 1, 1)
+    end_date: PDXDate = date(1949, 1, 1)
+    start_date: PDXDate = date(1795, 1, 1)
 
 
 class CasusBelli(BaseModel):
     type: str
     first: Tag
     second: Tag
-    start_date: date
+    start_date: PDXDate
 
 
 class Combatant(BaseModel):
@@ -610,12 +561,12 @@ class NavalBattle(BaseModel):
 class Region(BaseModel):
     index: int
     phase: int
-    date: date
+    date: PDXDate
     temperature: ThreeSigFigDecimal
 
 
 class VicIISave(BaseModel):
-    date: date
+    date: PDXDate
     player: Tag
     government: int
     automate_trade: bool
@@ -625,7 +576,7 @@ class VicIISave(BaseModel):
     state: int
     flags = dict[Flag, bool]
     gameplaysettings = dict[Variable, list[int]]
-    start_date: date
+    start_date: PDXDate
     start_pop_index: int
     worldmarket: WorldMarket
     great_wars_enabled: bool
@@ -635,7 +586,7 @@ class VicIISave(BaseModel):
     budget_balance: Annotated[list[FiveSigFigDecimal], 30]
     player_monthly_pop_growth: Annotated[list[int], 30]
     player_monthly_pop_growth_tag: Tag
-    player_monthly_pop_growth_date: date
+    player_monthly_pop_growth_date: PDXDate
     fascist: IdeologyEnabled
     socialist: IdeologyEnabled
     communist: IdeologyEnabled

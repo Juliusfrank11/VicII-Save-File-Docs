@@ -46,6 +46,7 @@ def validate_pdx_date(date_str: str):
         date(*[int(part) for part in date_str.split(".")])
     except ValueError:
         raise ValueError(f"{date_str} is not a valid PDX date (YYYY.MM.DD)")
+    return date_str
 
 
 @make_string_unquoted
