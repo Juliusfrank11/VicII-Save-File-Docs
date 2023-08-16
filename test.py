@@ -2,6 +2,7 @@ from validators import validate_tag
 import json
 import re
 import copy
+from typing import Any
 
 with open("json_saves/autosave.json", "r") as f:
     raw_json_save = json.load(f)
@@ -20,36 +21,87 @@ for k, v in raw_json_save.items():
         del json_save[k]
 
 
-def collect_repeated_keys(d, base_key=None, counter=1):
-    # base case: no keys left in the dictionary
-    if len(d) == 0:
-        return {}
-
-    # if base_key is not provided, find the base key
-    if base_key is None:
-        base_key = sorted(d.keys())[0]
-        base_value = d.pop(base_key)
-    else:
-        base_value = []
-
-    # find related keys
-    related_keys = [key for key in d.keys() if key.startswith(base_key)]
-
-    # collect values of the related keys and remove them from the dictionary
-    for key in related_keys:
-        base_value.append(d[key])
-        del d[key]
-
-    # assign the list of values to the base key
-    d[base_key] = base_value
-
-    # call the function recursively to process the remaining keys in the dictionary
-    collect_repeated_keys(d)
-
-    return d
+def max_depth(d):
+    if isinstance(d, dict):
+        return 1 + (max(map(max_depth, d.values())) if d else 0)
+    return 0
 
 
-json_save = collect_repeated_keys(json_save)
+"""
+def collect_repeated_keys(dictionary: dict[str,Any]):
+    original = copy.deepcopy(dictionary)
+    all_keys = list(dictionary.keys())
+    already_collected = []
+    for key, value in original.items():
+        if f"{key}2" in all_keys:
+            #print(key)
+            collection = [value]
+            repeated_keys = []
+            i = 2
+            exhausted_keys = False
+            while not exhausted_keys:
+                try:
+                    key_to_find = f"{key}{i}"
+                    collection.append(dictionary[key_to_find])
+                    repeated_keys.append(key_to_find)
+                    i += 1
+                except KeyError:
+                    exhausted_keys = True
+            dictionary[key] = collection
+            for k in repeated_keys:
+                del dictionary[k]
+                all_keys.remove(k)
+            already_collected.append(key)
+    return dictionary
+"""
+
+
+def collect_repeated_keys(dictionary):
+    def is_all_digits(string):
+        return all([c in "0123456789." for c in string])
+
+    original = copy.deepcopy(dictionary)
+    searched_keys = list(dictionary.keys())
+    confirmed_duplicate_keys = []
+    for key, value in original.items():
+        # if the value is a nested dictionary, recursively collect its keys
+        if key not in confirmed_duplicate_keys:
+            if isinstance(value, dict):
+                dictionary[key] = collect_repeated_keys(value)
+            # if the value is a list of dictionaries, recursively collect keys for each dictionary in the list
+            elif isinstance(value, list) and all(
+                isinstance(item, dict) for item in value
+            ):
+                dictionary[key] = [collect_repeated_keys(item) for item in value]
+            # if the key is repeated, collect the repeated keys into a single key
+            # WHY THE FUCK IS THERE A KEY CALLED `money2` AND IT'S A BOOLEAN!?!??!
+            if f"{key}2" in searched_keys and not is_all_digits(key) and key != "money":
+                collection = [
+                    {"this_is_a_repeated_key_please_collapse_down": True},
+                    value,
+                ]
+                repeated_keys = []
+                i = 2
+                exhausted_keys = False
+                while not exhausted_keys:
+                    try:
+                        key_to_find = f"{key}{i}"
+                        collection.append(dictionary[key_to_find])
+                        repeated_keys.append(key_to_find)
+                        i += 1
+                    except KeyError:
+                        exhausted_keys = True
+                dictionary[key] = collection
+                for k in repeated_keys:
+                    del dictionary[k]
+                    searched_keys.remove(k)
+                    confirmed_duplicate_keys.append(k)
+
+    return dictionary
+
+
+consolidated_json_save = collect_repeated_keys(json_save)
+json.dump(consolidated_json_save, open("consolidated_json_save.json", "w"))
 
 from models import VicIISave
 
