@@ -77,3 +77,9 @@ def validate_rgo(rgo: str, new_rgos_in_mod=[]):
 def validate_technology(tech: str, new_techs_in_mod=[]):
     if tech not in vvv.techs + new_techs_in_mod:
         raise ValueError(f"{tech} is not a valid technology")
+
+
+@make_string_unquoted
+def validate_int_str(int_str: str):
+    if not all([c in '-"0123456789' for c in int]):
+        raise ValueError(f"{int_str} is not a valid integer")

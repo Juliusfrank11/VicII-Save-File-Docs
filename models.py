@@ -4,239 +4,249 @@ from datetime import date
 from typing import Annotated, Literal, Union, Tuple, Optional
 from decimal import Decimal
 from validators import make_string_unquoted, validate_pdx_date
+import unquoted_dtypes as unquoted
+import quoted_dtypes as quoted
+
+from pydantic import Extra, FilePath
+
+
+class Configuration(BaseModel):
+    input: FilePath = "input"
+    output: FilePath = "output"
+
+    class Config:
+        extra = Extra.forbid
+
 
 # pesudo-primitive" PDX-exclusive classes
-ThreeSigFigDecimal = Annotated[Decimal, Field(decimal_places=3)]
-FiveSigFigDecimal = Annotated[Decimal, Field(decimal_places=5)]
-QuotedString = Annotated[str, Field(regex='(?!"["]*"$).*')]
-UnquotedString = Annotated[str, Field(regex='^(?!"[^"]*"$).*')]
-QuotedTag = Annotated[QuotedString, Field(regex=r"\b([A-Z]{3}|D[0-9]{2}|---)\b")]
-UnquotedTag = Annotated[UnquotedString, Field(regex=r"\b([A-Z]{3}|D[0-9]{2}|---)\b")]
-PDXDate = Annotated[str, Field(regex=r"[0-9]+\.[0-9]+\.[0-9]+")]
-Variable = str
-Flag = Annotated[Variable, "global event flag"]
-RGO = Annotated[Variable, "RGO name"]
-Tech = Annotated[Variable, "Technology"]
-Ideology = Annotated[Variable, "Ideology"]
 Repeated = list  # used for keys that repeat
+PDXBoolean = Union[Literal["yes"], Literal["no"]]
+
+
+class RepeatedKeyIndicator(BaseModel):
+    this_is_a_repeated_key_please_collapse_down: bool
 
 
 class Convoys(BaseModel):
-    clipper_convoy: FiveSigFigDecimal
-    steamer_convoy: FiveSigFigDecimal
+    clipper_convoy: unquoted.FiveSigFigDecimal
+    steamer_convoy: unquoted.FiveSigFigDecimal
 
 
 class WorldMarket(BaseModel):
-    worldmarket_pool: dict[RGO, FiveSigFigDecimal]
-    price_pool: dict[RGO, FiveSigFigDecimal]
-    last_price_history: dict[RGO, FiveSigFigDecimal]
-    supply_pool: dict[RGO, FiveSigFigDecimal]
-    last_supply_pool: dict[RGO, FiveSigFigDecimal]
-    price_history: Repeated[dict[RGO, FiveSigFigDecimal]]
-    price_history_last_update: PDXDate
-    price_change: dict[RGO, FiveSigFigDecimal]
-    discovered_goods: dict[RGO, float]
-    actual_sold: dict[RGO, FiveSigFigDecimal]
-    actual_sold_world: dict[RGO, FiveSigFigDecimal]
-    real_demand: dict[RGO, FiveSigFigDecimal]
-    demand: dict[RGO, FiveSigFigDecimal]
-    player_balance: dict[RGO, FiveSigFigDecimal]
-    player_pops_consumption_cache: Repeated[dict[RGO, FiveSigFigDecimal]]
+    worldmarket_pool: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    price_pool: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    last_price_history: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    supply_pool: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    last_supply_pool: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    price_history: Repeated[
+        RepeatedKeyIndicator | dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    ]
+    price_history_last_update: quoted.PDXDate
+    price_change: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    discovered_goods: dict[unquoted.RGO, float]
+    actual_sold: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    actual_sold_world: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    real_demand: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    demand: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    player_balance: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    player_pops_consumption_cache: Repeated[
+        RepeatedKeyIndicator | dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    ]
 
 
 class IdeologyEnabled(BaseModel):
-    enabled = PDXDate
+    enabled = quoted.PDXDate
 
 
 class Identifier(BaseModel):
-    id: int
-    type: int
+    id: unquoted.Int
+    type: unquoted.Int
 
 
 class IndexedIdentifier(Identifier):
-    index: int
+    index: unquoted.Int
 
 
 class FiredEvent(BaseModel):
-    id: Repeated[Identifier]
+    id: Repeated[RepeatedKeyIndicator | Identifier]
 
 
 class Culture(BaseModel):
-    name: Variable
-    religion: Variable
+    name: unquoted.PDXVariable
+    religion: unquoted.PDXVariable
 
 
 class Pop(BaseModel):
-    id: int
-    pop_type: Variable
-    size: int
+    id: unquoted.Int
+    pop_type: unquoted.PDXVariable
+    size: unquoted.Int
     culture: Culture
-    money: FiveSigFigDecimal
-    ideology: dict[int, FiveSigFigDecimal]
-    issues: dict[int, FiveSigFigDecimal]
-    con: FiveSigFigDecimal
-    literacy: FiveSigFigDecimal
-    bank: FiveSigFigDecimal
-    con_factor: FiveSigFigDecimal
-    demoted: int
-    promoted: int
-    life_needs: FiveSigFigDecimal
-    everyday_needs: FiveSigFigDecimal
-    luxury_needs: FiveSigFigDecimal
-    size_changes: list[int]
-    converted: int
-    random: int
+    money: unquoted.FiveSigFigDecimal
+    ideology: dict[unquoted.Int, unquoted.FiveSigFigDecimal]
+    issues: dict[unquoted.Int, unquoted.FiveSigFigDecimal]
+    con: unquoted.FiveSigFigDecimal
+    literacy: unquoted.FiveSigFigDecimal
+    bank: unquoted.FiveSigFigDecimal
+    con_factor: unquoted.FiveSigFigDecimal
+    demoted: unquoted.Int
+    promoted: unquoted.Int
+    life_needs: unquoted.FiveSigFigDecimal
+    everyday_needs: unquoted.FiveSigFigDecimal
+    luxury_needs: unquoted.FiveSigFigDecimal
+    size_changes: list[unquoted.Int]
+    converted: unquoted.Int
+    random: unquoted.Int
     faction: Identifier
-    local_migration: int
-    external_migration: int
-    movement_tag: Tag
-    colonial_migration: int
-    assimilated: int
+    local_migration: unquoted.Int
+    external_migration: unquoted.Int
+    movement_tag: quoted.Tag
+    colonial_migration: unquoted.Int
+    assimilated: unquoted.Int
 
 
 class Worker(Pop):
-    days_of_loss = int
+    days_of_loss = unquoted.Int
 
 
 class Artisans(Pop):
     production_type: str
-    stockpile: dict[RGO, FiveSigFigDecimal]
-    need: dict[RGO, FiveSigFigDecimal]
-    last_spending: FiveSigFigDecimal
-    current_producing: FiveSigFigDecimal
-    percent_afforded: FiveSigFigDecimal
-    percent_sold_domestic: FiveSigFigDecimal
-    percent_sold_export: FiveSigFigDecimal
-    leftover: FiveSigFigDecimal
-    throttle: FiveSigFigDecimal
-    needs_cost: FiveSigFigDecimal
-    production_income: FiveSigFigDecimal
-    con_factor: FiveSigFigDecimal
+    stockpile: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    need: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    last_spending: unquoted.FiveSigFigDecimal
+    current_producing: unquoted.FiveSigFigDecimal
+    percent_afforded: unquoted.FiveSigFigDecimal
+    percent_sold_domestic: unquoted.FiveSigFigDecimal
+    percent_sold_export: unquoted.FiveSigFigDecimal
+    leftover: unquoted.FiveSigFigDecimal
+    throttle: unquoted.FiveSigFigDecimal
+    needs_cost: unquoted.FiveSigFigDecimal
+    production_income: unquoted.FiveSigFigDecimal
+    con_factor: unquoted.FiveSigFigDecimal
 
 
 class EmployeeData(BaseModel):
-    province_pop_id: Repeated[IndexedIdentifier]
-    count: int
+    province_pop_id: Repeated[RepeatedKeyIndicator | IndexedIdentifier]
+    count: unquoted.Int
 
 
 class Employment(BaseModel):
-    province_id: int
+    province_id: unquoted.Int
     employees: EmployeeData
-    last_income: FiveSigFigDecimal
+    last_income: unquoted.FiveSigFigDecimal
     goods_type: str
 
 
 class UnitNameData(BaseModel):
     # need more verification on this one
     # very unclear how it works
-    count: int
-    id: list[int]
+    count: unquoted.Int
+    id: list[unquoted.Int]
 
 
 class PartyLoyalty(BaseModel):
     ideology: str
-    loyalty_value: FiveSigFigDecimal
+    loyalty_value: unquoted.FiveSigFigDecimal
 
 
 class BuildingConstruction(BaseModel):
     id: Identifier
-    state_date: PDXDate
-    date: PDXDate
-    location: Annotated[int, "Province ID"]
-    country: Tag
-    building: int
+    state_date: quoted.PDXDate
+    date: quoted.PDXDate
+    location: Annotated[unquoted.Int, "Province ID"]
+    country: quoted.Tag
+    building: unquoted.Int
 
 
 class MilitaryInputGoodsData(BaseModel):
-    goods_demand: dict[RGO, FiveSigFigDecimal]
-    input_demand: dict[RGO, FiveSigFigDecimal]
-    money: FiveSigFigDecimal
+    goods_demand: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    input_demand: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    money: unquoted.FiveSigFigDecimal
 
 
 class MilitaryConstruction(BaseModel):
     id: Identifier
-    start_date: PDXDate
-    date: PDXDate
-    location: Annotated[int, "Province ID"]
-    country: Tag
+    start_date: quoted.PDXDate
+    date: quoted.PDXDate
+    location: Annotated[unquoted.Int, "Province ID"]
+    country: quoted.Tag
     input_goods: MilitaryInputGoodsData
     name: str
     type: str
     unit: Identifier
     regiment: Identifier
     pop: Identifier
-    count: int
-    rally_point: int
+    count: unquoted.Int
+    rally_point: unquoted.Int
 
 
 class Province(BaseModel):
     name: str
-    owner: Tag
-    controller: Tag
-    core: Repeated[Tag]
-    garrison: ThreeSigFigDecimal
-    fort: Annotated[list[ThreeSigFigDecimal], 2]
-    railroad: Annotated[list[ThreeSigFigDecimal], 2]
-    naval_base: Annotated[list[ThreeSigFigDecimal], 2]
+    owner: quoted.Tag
+    controller: quoted.Tag
+    core: Optional[Repeated[RepeatedKeyIndicator | quoted.Tag]]
+    garrison: unquoted.ThreeSigFigDecimal
+    fort: Annotated[list[unquoted.ThreeSigFigDecimal], 2]
+    railroad: Annotated[list[unquoted.ThreeSigFigDecimal], 2]
+    naval_base: Annotated[list[unquoted.ThreeSigFigDecimal], 2]
     pops: list[Pop]
     rgo: Employment
-    life_rating: int
-    infrastructure: ThreeSigFigDecimal
-    last_imigration: PDXDate
-    last_controller_change: PDXDate
+    life_rating: unquoted.Int
+    infrastructure: unquoted.ThreeSigFigDecimal
+    last_imigration: quoted.PDXDate
+    last_controller_change: quoted.PDXDate
     unit_names: UnitNameData
-    party_loyalty: Repeated[PartyLoyalty]
-    nationalism: ThreeSigFigDecimal
-    building_construction: Repeated[BuildingConstruction]
-    military_construction: Repeated[MilitaryConstruction]
-    crime: int
+    party_loyalty: Repeated[RepeatedKeyIndicator | PartyLoyalty]
+    nationalism: unquoted.ThreeSigFigDecimal
+    building_construction: Repeated[RepeatedKeyIndicator | BuildingConstruction]
+    military_construction: Repeated[RepeatedKeyIndicator | MilitaryConstruction]
+    crime: unquoted.Int
 
 
 class Research(BaseModel):
-    technology: Tech
-    cost: ThreeSigFigDecimal
-    max_producing: ThreeSigFigDecimal
-    last_spending: ThreeSigFigDecimal
-    active: bool
+    technology: unquoted.Technology
+    cost: unquoted.ThreeSigFigDecimal
+    max_producing: unquoted.ThreeSigFigDecimal
+    last_spending: unquoted.ThreeSigFigDecimal
+    active: PDXBoolean
 
 
 class CountryModifier(BaseModel):
     modifier: str
-    date: PDXDate
+    date: quoted.PDXDate
 
 
 class TaxBracket(BaseModel):
-    current: FiveSigFigDecimal
-    tax_income: list[FiveSigFigDecimal, 13]
-    tax_eff: list[FiveSigFigDecimal, 13]
-    total: FiveSigFigDecimal
-    rangeLimitMax: FiveSigFigDecimal
-    rangeLimitMin: FiveSigFigDecimal
-    max_tax: int
-    min_tax: int
+    current: unquoted.FiveSigFigDecimal
+    tax_income: list[unquoted.FiveSigFigDecimal, 13]
+    tax_eff: list[unquoted.FiveSigFigDecimal, 13]
+    total: unquoted.FiveSigFigDecimal
+    rangeLimitMax: unquoted.FiveSigFigDecimal
+    rangeLimitMin: unquoted.FiveSigFigDecimal
+    max_tax: unquoted.Int
+    min_tax: unquoted.Int
 
 
 class SpendingSetting(BaseModel):
-    settings: FiveSigFigDecimal
-    temp_settings: FiveSigFigDecimal
-    factor: FiveSigFigDecimal
-    reserve: FiveSigFigDecimal
-    maxValue: FiveSigFigDecimal
-    rangeLimitMax: FiveSigFigDecimal
-    rangeLimitMin: FiveSigFigDecimal
-    max_tax: int
-    min_tax: int
+    settings: unquoted.FiveSigFigDecimal
+    temp_settings: unquoted.FiveSigFigDecimal
+    factor: unquoted.FiveSigFigDecimal
+    reserve: unquoted.FiveSigFigDecimal
+    maxValue: unquoted.FiveSigFigDecimal
+    rangeLimitMax: unquoted.FiveSigFigDecimal
+    rangeLimitMin: unquoted.FiveSigFigDecimal
+    max_tax: unquoted.Int
+    min_tax: unquoted.Int
 
 
 class Leader(BaseModel):
     name: str
-    date: PDXDate
-    type: Annotated[Variable, "`land` or `sea`"]
+    date: quoted.PDXDate
+    type: Annotated[unquoted.PDXVariable, "`land` or `sea`"]
     personality: str
     background: str
-    country: Tag
+    country: quoted.Tag
     picture: str
-    prestige: ThreeSigFigDecimal
+    prestige: unquoted.ThreeSigFigDecimal
     id: Identifier
 
 
@@ -244,11 +254,11 @@ class Ship(BaseModel):
     id: Identifier
     name: str
     pop: Identifier
-    organisation: ThreeSigFigDecimal
-    strength: ThreeSigFigDecimal
-    experience: ThreeSigFigDecimal
-    count: int
-    type: Variable
+    organisation: unquoted.ThreeSigFigDecimal
+    strength: unquoted.ThreeSigFigDecimal
+    experience: unquoted.ThreeSigFigDecimal
+    count: unquoted.Int
+    type: unquoted.PDXVariable
 
 
 class Regiment(Ship):
@@ -259,67 +269,67 @@ class Army(BaseModel):
     id: Identifier
     name: str
     leader: Identifier
-    previous: Annotated[int, "Province ID"]
-    movement_progress: ThreeSigFigDecimal
-    location: Annotated[int, "Province ID"]
-    dig_in_last_date: PDXDate = "2.1.1"
-    supplies: ThreeSigFigDecimal
-    regiment: Repeated[Regiment]
+    previous: Annotated[unquoted.Int, "Province ID"]
+    movement_progress: unquoted.ThreeSigFigDecimal
+    location: Annotated[unquoted.Int, "Province ID"]
+    dig_in_last_date: quoted.PDXDate = "2.1.1"
+    supplies: unquoted.ThreeSigFigDecimal
+    regiment: Repeated[RepeatedKeyIndicator | Regiment]
 
 
 class Navy(BaseModel):
     id: Identifier
     name: str
     leader: Identifier
-    previous: Annotated[int, "Province ID"]
-    movement_progress: ThreeSigFigDecimal
-    location: Annotated[int, "Province ID"]
-    dig_in_last_date: PDXDate = "2.1.1"
-    supplies: ThreeSigFigDecimal
-    ship: Repeated[Ship]
+    previous: Annotated[unquoted.Int, "Province ID"]
+    movement_progress: unquoted.ThreeSigFigDecimal
+    location: Annotated[unquoted.Int, "Province ID"]
+    dig_in_last_date: quoted.PDXDate = "2.1.1"
+    supplies: unquoted.ThreeSigFigDecimal
+    ship: Repeated[RepeatedKeyIndicator | Ship]
 
 
 class ForeignRelation(BaseModel):
-    value: int
-    last_send_diplomat: PDXDate
-    last_war: PDXDate
-    truce_until: PDXDate
-    level: int
-    level_changed_date: PDXDate
-    influence_value: ThreeSigFigDecimal
+    value: unquoted.Int
+    last_send_diplomat: quoted.PDXDate
+    last_war: quoted.PDXDate
+    truce_until: quoted.PDXDate
+    level: unquoted.Int
+    level_changed_date: quoted.PDXDate
+    influence_value: unquoted.ThreeSigFigDecimal
 
 
 class ProvinceDesire(BaseModel):
-    id: int
-    value: int
+    id: unquoted.Int
+    value: unquoted.Int
 
 
 class DiplomaticAttitude(BaseModel):
-    id: Tag
-    value: int
+    id: quoted.Tag
+    value: unquoted.Int
 
 
 class AIStrategy(BaseModel):
-    initialized: bool
-    consolidate: bool
-    date: PDXDate
-    static: bool
-    personality: Variable
-    conquer_prov: Repeated[ProvinceDesire]
-    threat: Repeated[DiplomaticAttitude]
-    antagonize: Repeated[DiplomaticAttitude]
-    befriend: Repeated[DiplomaticAttitude]
-    protect: Repeated[DiplomaticAttitude]
-    rival: Repeated[DiplomaticAttitude]
+    initialized: PDXBoolean
+    consolidate: PDXBoolean
+    date: quoted.PDXDate
+    static: PDXBoolean
+    personality: unquoted.PDXVariable
+    conquer_prov: Repeated[RepeatedKeyIndicator | ProvinceDesire]
+    threat: Repeated[RepeatedKeyIndicator | DiplomaticAttitude]
+    antagonize: Repeated[RepeatedKeyIndicator | DiplomaticAttitude]
+    befriend: Repeated[RepeatedKeyIndicator | DiplomaticAttitude]
+    protect: Repeated[RepeatedKeyIndicator | DiplomaticAttitude]
+    rival: Repeated[RepeatedKeyIndicator | DiplomaticAttitude]
 
 
 class PoliticalMovement(BaseModel):
-    support: int
-    cache: FiveSigFigDecimal
+    support: unquoted.Int
+    cache: unquoted.FiveSigFigDecimal
 
 
 class IndependenceMovement(PoliticalMovement):
-    tag: Tag
+    tag: quoted.Tag
 
 
 class PolicyMovement(PoliticalMovement):
@@ -327,69 +337,69 @@ class PolicyMovement(PoliticalMovement):
 
 
 class TradePolicy(BaseModel):
-    limit: FiveSigFigDecimal
-    buy: bool
-    automate_trade: bool
+    limit: unquoted.FiveSigFigDecimal
+    buy: PDXBoolean
+    automate_trade: PDXBoolean
 
 
 class State(BaseModel):
     id: Identifier
-    provinces: list[int]
-    is_colonial: int
-    savings: FiveSigFigDecimal
-    interest: FiveSigFigDecimal
-    flashpoint: bool
-    tension: ThreeSigFigDecimal
-    crisis: Tag
+    provinces: list[unquoted.Int]
+    is_colonial: unquoted.Int
+    savings: unquoted.FiveSigFigDecimal
+    interest: unquoted.FiveSigFigDecimal
+    flashpoint: PDXBoolean
+    tension: unquoted.ThreeSigFigDecimal
+    crisis: quoted.Tag
 
 
 class NationalBank(BaseModel):
-    money: FiveSigFigDecimal
-    money_lent: FiveSigFigDecimal
+    money: unquoted.FiveSigFigDecimal
+    money_lent: unquoted.FiveSigFigDecimal
 
 
 class Railroad(BaseModel):
-    path: list[Annotated[int, "Province ID"]]
+    path: list[Annotated[unquoted.Int, "Province ID"]]
 
 
 class Nation(BaseModel):
-    human: bool
-    tax_base: FiveSigFigDecimal
-    flags: dict[Flag, bool]
+    human: PDXBoolean
+    tax_base: unquoted.FiveSigFigDecimal
+    flags: dict[unquoted.PDXVariable, PDXBoolean]
     variables: dict = {}
-    capital: Annotated[int, "Province ID"]
-    research_points: ThreeSigFigDecimal
-    technology: dict[Tech, Tuple]
+    capital: Annotated[unquoted.Int, "Province ID"]
+    research_points: unquoted.ThreeSigFigDecimal
+    technology: dict[unquoted.Technology, Annotated[list, 2]]
     research: Research
-    last_reform: PDXDate
-    last_election: PDXDate
-    wage_reform: Variable
-    work_hours: Variable
-    safety_regulations: Variable
-    unemployment_subsidies: Variable
-    pensions: Variable
-    health_care: Variable
-    school_reforms: Variable
-    slavery: Variable
-    vote_franschise: Variable
-    voting_system: Variable
-    public_meetings: Variable
-    press_rights: Variable
-    trade_unions: Variable
-    political_parties: Variable
-    upper_house: dict[Ideology, FiveSigFigDecimal]
-    last_party_change: PDXDate
-    ruling_party: int
-    active_party: int
+    last_reform: quoted.PDXDate
+    last_election: quoted.PDXDate
+    wage_reform: unquoted.PDXVariable
+    work_hours: unquoted.PDXVariable
+    safety_regulations: unquoted.PDXVariable
+    unemployment_subsidies: unquoted.PDXVariable
+    pensions: unquoted.PDXVariable
+    health_care: unquoted.PDXVariable
+    school_reforms: unquoted.PDXVariable
+    slavery: unquoted.PDXVariable
+    vote_franschise: unquoted.PDXVariable
+    voting_system: unquoted.PDXVariable
+    public_meetings: unquoted.PDXVariable
+    press_rights: unquoted.PDXVariable
+    trade_unions: unquoted.PDXVariable
+    political_parties: unquoted.PDXVariable
+    upper_house: dict[unquoted.Ideology, unquoted.FiveSigFigDecimal]
+    last_party_change: quoted.PDXDate
+    ruling_party: unquoted.Int
+    active_party: unquoted.Int
     naval_need: Convoys
-    land_supply_cost: dict[RGO, FiveSigFigDecimal]
-    naval_supply_cost: dict[RGO, FiveSigFigDecimal]
-    diplomatic_points: ThreeSigFigDecimal
-    religion: str
-    government: Variable
-    plurality: ThreeSigFigDecimal
-    revanchism: ThreeSigFigDecimal
-    modifier: Repeated[CountryModifier]
+    land_supply_cost: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    naval_supply_cost: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    diplomatic_points: unquoted.ThreeSigFigDecimal
+    religion: quoted.PDXVariable
+    government: unquoted.PDXVariable
+    plurality: unquoted.ThreeSigFigDecimal
+    revanchism: unquoted.ThreeSigFigDecimal
+    modifier: Repeated[RepeatedKeyIndicator | CountryModifier]
     poor_tax: TaxBracket
     middle_tax: TaxBracket
     rich_tax: TaxBracket
@@ -397,218 +407,245 @@ class Nation(BaseModel):
     crime_fighting: SpendingSetting
     social_spending: SpendingSetting
     military_spending: SpendingSetting
-    overseas_penalty: FiveSigFigDecimal
-    leadership: FiveSigFigDecimal
-    auto_assign_leaders: bool
-    auto_create_leaders: bool
-    leader: Repeated[Leader]
-    army: Repeated[Army]
-    navy: Repeated[Navy]
-    relations: dict[Tag, ForeignRelation]
-    active_inventions: list[int]
-    possible_inventions: list[int]
-    illegal_inventions: list[int]
+    overseas_penalty: unquoted.FiveSigFigDecimal = Decimal(0.00000)
+    leadership: unquoted.FiveSigFigDecimal = Decimal(0.00000)
+    auto_assign_leaders: PDXBoolean
+    auto_create_leaders: PDXBoolean
+    leader: Repeated[RepeatedKeyIndicator | Leader]
+    army: Repeated[RepeatedKeyIndicator | Army]
+    navy: Repeated[RepeatedKeyIndicator | Navy]
+    relations: dict[unquoted.Tag, ForeignRelation]
+    active_inventions: list[unquoted.Int]
+    possible_inventions: list[unquoted.Int]
+    illegal_inventions: list[unquoted.Int]
     government_flag: dict[str, str]
-    last_mission_cancel: PDXDate = date(1, 1, 1)
+    last_mission_cancel: quoted.PDXDate = date(1, 1, 1)
     ai_hard_strategy: AIStrategy
     ai_strategy: AIStrategy
-    foreign_investment: list[FiveSigFigDecimal]
-    schools: str
-    primary_culture: str
+    foreign_investment: list[unquoted.FiveSigFigDecimal]
+    schools: quoted.PDXVariable
+    primary_culture: quoted.PDXVariable
     culture: list[str] = []
     bank: NationalBank
-    money: FiveSigFigDecimal
-    last_bankrupt: PDXDate = date(1, 1, 1)
-    prestige: ThreeSigFigDecimal
-    movement: Repeated[Union[PoliticalMovement, IndependenceMovement]]
-    stockpile: dict[RGO, FiveSigFigDecimal]
-    national_value: str
+    money: unquoted.FiveSigFigDecimal
+    last_bankrupt: quoted.PDXDate = '"1.1.1"'
+    prestige: unquoted.ThreeSigFigDecimal
+    movement: Repeated[
+        RepeatedKeyIndicator
+        | Union[PoliticalMovement, IndependenceMovement, PolicyMovement]
+    ]
+    stockpile: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    national_value: quoted.PDXVariable
     buy_domestic: dict = {}
-    trade: dict[RGO, TradePolicy]
-    civilized: bool
-    state: Repeated[State]
-    badboy: ThreeSigFigDecimal
-    trade_cap_land: FiveSigFigDecimal
-    trade_cap_naval: FiveSigFigDecimal
-    trade_cap_projects: FiveSigFigDecimal
-    max_tariff: FiveSigFigDecimal
-    domestic_supply_pool: dict[RGO, FiveSigFigDecimal]
-    sold_supply_pool: dict[RGO, FiveSigFigDecimal]
-    domestic_demand_pool: dict[RGO, FiveSigFigDecimal]
-    actual_sold_domestic: dict[RGO, FiveSigFigDecimal]
-    saved_country_supply: dict[RGO, FiveSigFigDecimal]
-    max_bought: dict[RGO, FiveSigFigDecimal]
-    national_focus: dict[Annotated[str, "Quoted Province ID"], str]
-    expenses: list[FiveSigFigDecimal]
-    incomes: list[FiveSigFigDecimal]
-    interesting_countries: list[int]
-    next_quarterly_pulse: PDXDate
-    next_yearly_pulse: PDXDate
-    suppression: ThreeSigFigDecimal
-    railroads = Repeated[Railroad]
-    is_releasable_vassal: bool = True
+    trade: dict[unquoted.RGO, TradePolicy]
+    civilized: PDXBoolean
+    state: Repeated[RepeatedKeyIndicator | State]
+    badboy: unquoted.ThreeSigFigDecimal
+    trade_cap_land: unquoted.FiveSigFigDecimal
+    trade_cap_naval: unquoted.FiveSigFigDecimal
+    trade_cap_projects: unquoted.FiveSigFigDecimal
+    max_tariff: unquoted.FiveSigFigDecimal
+    domestic_supply_pool: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    sold_supply_pool: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    domestic_demand_pool: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    actual_sold_domestic: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    saved_country_supply: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    max_bought: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    national_focus: dict[quoted.Int, quoted.PDXVariable]
+    influence: dict[quoted.Tag, quoted.Int]
+    expenses: list[unquoted.FiveSigFigDecimal]
+    incomes: list[unquoted.FiveSigFigDecimal]
+    interesting_countries: list[unquoted.Int]
+    next_quarterly_pulse: quoted.PDXDate
+    next_yearly_pulse: quoted.PDXDate
+    suppression: unquoted.ThreeSigFigDecimal
+    railroads = Repeated[RepeatedKeyIndicator | Railroad]
+    is_releasable_vassal: PDXBoolean = "yes"
 
 
 class RebelFaction(BaseModel):
     id: Identifier
     type: str
     name: str
-    country: Tag
-    independence: Union[Tag, Literal["---"]] = "---"
+    country: quoted.Tag
+    independence: Union[quoted.Tag, Literal["---"]] = "---"
     culture: str
     religion: str
     government: str
-    province: int
+    province: unquoted.Int
     leader: Identifier
-    organization: FiveSigFigDecimal
-    pop: Repeated[Identifier]
+    organization: unquoted.FiveSigFigDecimal
+    pop: Repeated[RepeatedKeyIndicator | Identifier]
 
 
 class Alliance(BaseModel):
-    first: Tag
-    second: Tag
-    end_date: PDXDate = date(1949, 1, 1)
-    start_date: PDXDate
+    first: quoted.Tag
+    second: quoted.Tag
+    end_date: quoted.PDXDate = '"1949.1.1"'
+    start_date: quoted.PDXDate = '"1795.1.1"'
 
 
 class Vassalage(BaseModel):
-    first: Tag  # Overlord
-    second: Tag  # Vassal
-    end_date: PDXDate = date(1949, 1, 1)
-    start_date: PDXDate = date(1795, 1, 1)
+    first: Annotated[quoted.Tag, "Overload"]
+    second: Annotated[quoted.Tag, "Vassal"]
+    end_date: quoted.PDXDate = '"1949.1.1"'
+    start_date: quoted.PDXDate = '"1795.1.1"'
 
 
 class CasusBelli(BaseModel):
     type: str
-    first: Tag
-    second: Tag
-    start_date: PDXDate
+    first: quoted.Tag
+    second: quoted.Tag
+    start_date: quoted.PDXDate
 
 
 class Combatant(BaseModel):
-    dice: int
-    unit: Repeated[Identifier]
-    losses: ThreeSigFigDecimal
-    accumulated_losses: list[ThreeSigFigDecimal]
-    front: dict[int, Identifier]
-    back: dict[int, Identifier]
+    dice: unquoted.Int
+    unit: Repeated[RepeatedKeyIndicator | Identifier]
+    losses: unquoted.ThreeSigFigDecimal
+    accumulated_losses: list[unquoted.ThreeSigFigDecimal]
+    front: dict[unquoted.Int, Identifier]
+    back: dict[unquoted.Int, Identifier]
 
 
 class LandCombatant(BaseModel):
-    dice: int
-    unit: Repeated[Identifier]
-    losses: ThreeSigFigDecimal
-    accumulated_losses: list[ThreeSigFigDecimal]
-    front: dict[int, Identifier]
-    back: dict[int, Identifier]
-    reserves: Repeated[Identifier]
-    irregular: ThreeSigFigDecimal = Decimal(0.000)
-    infantry: ThreeSigFigDecimal = Decimal(0.000)
-    guard: ThreeSigFigDecimal = Decimal(0.000)
-    cavalry: ThreeSigFigDecimal = Decimal(0.000)
-    cuirassier: ThreeSigFigDecimal = Decimal(0.000)
-    dragoon: ThreeSigFigDecimal = Decimal(0.000)
-    hussar: ThreeSigFigDecimal = Decimal(0.000)
-    airplane: ThreeSigFigDecimal = Decimal(0.000)
-    artillery: ThreeSigFigDecimal = Decimal(0.000)
-    engineer: ThreeSigFigDecimal = Decimal(0.000)
-    armor: ThreeSigFigDecimal = Decimal(0.000)
+    dice: unquoted.Int
+    unit: Repeated[RepeatedKeyIndicator | Identifier]
+    losses: unquoted.ThreeSigFigDecimal
+    accumulated_losses: list[unquoted.ThreeSigFigDecimal]
+    front: dict[unquoted.Int, Identifier]
+    back: dict[unquoted.Int, Identifier]
+    reserves: Repeated[RepeatedKeyIndicator | Identifier]
+    irregular: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    infantry: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    guard: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    cavalry: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    cuirassier: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    dragoon: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    hussar: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    airplane: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    artillery: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    engineer: unquoted.ThreeSigFigDecimal = Decimal(0.000)
+    armor: unquoted.ThreeSigFigDecimal = Decimal(0.000)
 
 
 class NavalCombatSlot(BaseModel):
     attacker: Identifier
-    distance: ThreeSigFigDecimal
-    stance: int
-    total_damage_str: ThreeSigFigDecimal
-    total_damage_org: ThreeSigFigDecimal
-    icon: int
-    name: str
-    killer_name: str = ""
-    tag: Tag
+    distance: unquoted.ThreeSigFigDecimal
+    stance: unquoted.Int
+    total_damage_str: unquoted.ThreeSigFigDecimal
+    total_damage_org: unquoted.ThreeSigFigDecimal
+    icon: unquoted.Int
+    name: quoted.PDXVariable
+    killer_name: quoted.PDXVariable = ""
+    tag: quoted.Tag
 
 
 class NavalCombatant(Combatant):
-    naval_combat_slot: Repeated[NavalCombatSlot]
-    penalty_factor: ThreeSigFigDecimal
+    naval_combat_slot: Repeated[RepeatedKeyIndicator | NavalCombatSlot]
+    penalty_factor: unquoted.ThreeSigFigDecimal
     # TODO: list out unit keys like in LandCombatant
 
 
 class Siege(BaseModel):
-    location: Annotated[int, "Province Id"]
-    day: int = -1
-    duration: int = 0
+    location: Annotated[unquoted.Int, "Province Id"]
+    day: unquoted.Int = -1
+    duration: unquoted.Int = 0
     attacker: Combatant = {}
     defender: Combatant = {}
-    total: int
+    total: unquoted.Int
 
 
 class LandBattle(BaseModel):
-    location: Annotated[int, "Province Id"]
-    day: int
-    duration: int
+    location: Annotated[unquoted.Int, "Province Id"]
+    day: unquoted.Int
+    duration: unquoted.Int
     attacker: LandCombatant
     defender: LandCombatant
 
 
 class NavalBattle(BaseModel):
-    location: Annotated[int, "Province Id"]
-    day: int
-    duration: int
+    location: Annotated[unquoted.Int, "Province Id"]
+    day: unquoted.Int
+    duration: unquoted.Int
     attacker: NavalCombatant
     defender: NavalCombatant
 
 
+class Colony(BaseModel):
+    tag: quoted.Tag
+    points: unquoted.Int
+    invest: unquoted.Int
+    date: quoted.PDXDate
+
+
 class Region(BaseModel):
-    index: int
-    phase: int
-    date: PDXDate
-    temperature: ThreeSigFigDecimal
+    index: unquoted.Int
+    phase: unquoted.Int
+    date: quoted.PDXDate
+    temperature: unquoted.ThreeSigFigDecimal
 
 
 class VicIISave(BaseModel):
-    date: PDXDate
-    player: Tag
-    government: int
-    automate_trade: bool
-    automate_slider: int
-    rebel: int
-    unit: int
-    state: int
-    flags = dict[Flag, bool]
-    gameplaysettings = dict[Variable, list[int]]
-    start_date: PDXDate
-    start_pop_index: int
+    date: quoted.PDXDate
+    player: quoted.Tag
+    government: unquoted.Int
+    automate_trade: PDXBoolean
+    automate_sliders: unquoted.Int
+    rebel: unquoted.Int
+    unit: unquoted.Int
+    state: unquoted.Int
+    flags = dict[unquoted.PDXVariable, PDXBoolean]
+    gameplaysettings = dict[Literal["setgameplayoptions"], list[unquoted.Int]]
+    start_date: quoted.PDXDate
+    start_pop_index: unquoted.Int
     worldmarket: WorldMarket
-    great_wars_enabled: bool
-    world_wars_enabled: bool
+    great_wars_enabled: PDXBoolean
+    world_wars_enabled: PDXBoolean
     overseas_penalty: Convoys
-    unit_cost: dict[RGO, FiveSigFigDecimal]
-    budget_balance: Annotated[list[FiveSigFigDecimal], 30]
-    player_monthly_pop_growth: Annotated[list[int], 30]
-    player_monthly_pop_growth_tag: Tag
-    player_monthly_pop_growth_date: PDXDate
+    unit_cost: dict[unquoted.RGO, unquoted.FiveSigFigDecimal]
+    budget_balance: list[unquoted.FiveSigFigDecimal]
+    player_monthly_pop_growth: Annotated[list[unquoted.Int], 30]
+    player_monthly_pop_growth_tag: quoted.Tag
+    player_monthly_pop_growth_date: quoted.PDXDate
     fascist: IdeologyEnabled
     socialist: IdeologyEnabled
     communist: IdeologyEnabled
     anarcho_liberal: IdeologyEnabled
-    canals: list[int]
-    id: Identifier
+    canals: list[unquoted.Int]
+    id: Repeated[RepeatedKeyIndicator | Identifier] | Identifier
     fired_events: FiredEvent
-    province_data: Annotated[dict[int, Province], "Collapse by one level"]
-    nation_data: Annotated[dict[Tag, Nation], "Collapse by one level"]
-    rebel_faction: Repeated[RebelFaction]
+    province_data: Annotated[dict[unquoted.Int, Province], "Collapse by one level"]
+    nation_data: Annotated[dict[unquoted.Tag, Nation], "Collapse by one level"]
+    rebel_faction: Repeated[RepeatedKeyIndicator | RebelFaction]
     diplomacy: Annotated[
-        Repeated[dict[Variable, Union[Alliance, Vassalage, CasusBelli]]],
+        Repeated[
+            RepeatedKeyIndicator
+            | dict[
+                Union[Literal["alliance"], Literal["vassal"], Literal["casus_belli"]],
+                Union[Alliance, Vassalage, CasusBelli],
+            ]
+        ],
         "Keys are `alliance` `vassal` and `casus_belli`",
     ]
     combat: Annotated[
-        Repeated[dict[Variable, Union[Siege, LandBattle, NavalBattle]]],
+        Repeated[
+            RepeatedKeyIndicator
+            | dict[
+                Union[
+                    Literal["siege_combat"],
+                    Literal["land_combat"],
+                    Literal["naval_combat"],
+                ],
+                Union[Siege, LandBattle, NavalBattle],
+            ]
+        ],
         "keys are `siege_combat` `land_combat` and `naval_combat`]",
     ]
     # TODO: active_war
     # TODO: previous_war
-    invention: list[int]
-    great_nation: Annotated[list[int], 8]
-    outliner: list[int]
+    inventions: Optional[list[unquoted.Int]]
+    great_nations: Annotated[list[unquoted.Int], 8]
+    outliner: list[unquoted.Int]
     # TODO: news_collector, need to add support for parsing strings first
-    region: Repeated[Region]
+    region: Repeated[RepeatedKeyIndicator | Region]
