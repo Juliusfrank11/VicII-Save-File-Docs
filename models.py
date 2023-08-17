@@ -202,7 +202,7 @@ class Worker(Pop):
     days_of_loss: unquotedInt
 
 
-class Artisans(Worker):
+class Artisan(Worker):
     production_type: str
     stockpile: dict[unquotedRGO, unquotedFiveSigFigDecimal]
     need: dict[unquotedRGO, unquotedFiveSigFigDecimal]
@@ -218,16 +218,31 @@ class Artisans(Worker):
     con_factor: unquotedFiveSigFigDecimal
 
 
+class ProvincePopId(BaseModel):
+    province_id: unquotedInt
+    index: unquotedInt
+    type: unquotedInt
+
+
 class EmployeeData(BaseModel):
-    province_pop_id: Repeated[RepeatedKeyIndicator | IndexedIdentifier]
+    province_pop_id: Repeated[RepeatedKeyIndicator | ProvincePopId] | ProvincePopId
     count: unquotedInt
 
 
-class Employment(BaseModel):
-    province_id: unquotedInt | None = None
-    employees: EmployeeData | None = None
+class ProvinceEmployment(BaseModel):
+    province_id: unquotedInt
+    employees: EmployeeData
+
+
+class StateEmployment(BaseModel):
+    state_province_id: unquotedInt
+    employees: EmployeeData
+
+
+class RGO(BaseModel):
+    employment: ProvinceEmployment
     last_income: unquotedFiveSigFigDecimal
-    goods_type: str
+    goods_type: quotedPDXVariable
 
 
 class UnitNameData(BaseModel):
@@ -235,6 +250,10 @@ class UnitNameData(BaseModel):
     # very unclear how it works
     count: unquotedInt | None = None
     id: list[unquotedInt] | None = None
+
+
+class UnitNames(BaseModel):
+    data: UnitNameData
 
 
 class PartyLoyalty(BaseModel):
@@ -254,6 +273,7 @@ class BuildingConstruction(BaseModel):
 class MilitaryInputGoodsData(BaseModel):
     goods_demand: dict[unquotedRGO, unquotedFiveSigFigDecimal]
     input_demand: dict[unquotedRGO, unquotedFiveSigFigDecimal] | None = None
+    input_goods: dict[unquotedRGO, unquotedFiveSigFigDecimal] | None = None
     money: unquotedFiveSigFigDecimal
 
 
@@ -273,6 +293,11 @@ class MilitaryConstruction(BaseModel):
     rally_point: unquotedInt
 
 
+class Modifier(BaseModel):
+    modifier: quotedPDXVariable
+    date: quotedPDXDate
+
+
 class Province(BaseModel):
     name: quotedPDXVariable
     garrison: unquotedThreeSigFigDecimal
@@ -282,24 +307,25 @@ class Province(BaseModel):
     fort: Annotated[list[unquotedThreeSigFigDecimal], 2] | None = None
     railroad: Annotated[list[unquotedThreeSigFigDecimal], 2] | None = None
     naval_base: Annotated[list[unquotedThreeSigFigDecimal], 2] | None = None
-    craftsmen: list[Worker | RepeatedKeyIndicator] | Pop | None = None
-    farmers: list[Worker | RepeatedKeyIndicator] | Pop | None = None
-    labourers: list[Worker | RepeatedKeyIndicator] | Pop | None = None
+    craftsmen: list[Worker | RepeatedKeyIndicator] | Worker | None = None
+    farmers: list[Worker | RepeatedKeyIndicator] | Worker | None = None
+    labourers: list[Worker | RepeatedKeyIndicator] | Worker | None = None
     slaves: list[Pop | RepeatedKeyIndicator] | Pop | None = None
     soldiers: list[Pop | RepeatedKeyIndicator] | Pop | None = None
-    artisans: list[Artisans | RepeatedKeyIndicator] | Artisans | None = None
+    artisans: list[Artisan | RepeatedKeyIndicator] | Artisan | None = None
     bureaucrats: list[Pop | RepeatedKeyIndicator] | Pop | None = None
     clergymen: list[Pop | RepeatedKeyIndicator] | Pop | None = None
-    clerks: list[Pop | RepeatedKeyIndicator] | Pop | None = None
+    clerks: list[Worker | RepeatedKeyIndicator] | Worker | None = None
     officers: list[Pop | RepeatedKeyIndicator] | Pop | None = None
     aristocrats: list[Pop | RepeatedKeyIndicator] | Pop | None = None
     capitalists: list[Pop | RepeatedKeyIndicator] | Pop | None = None
-    rgo: Employment | None = None
+    rgo: RGO | None = None
+    modifier: Repeated[RepeatedKeyIndicator | Modifier] | Modifier | None = None
     life_rating: unquotedInt | None = None
     infrastructure: unquotedThreeSigFigDecimal | None = None
     last_imigration: quotedPDXDate | None = None
     last_controller_change: quotedPDXDate | None = None
-    unit_names: UnitNameData | None = None
+    unit_names: UnitNames | None = None
     party_loyalty: Repeated[RepeatedKeyIndicator | PartyLoyalty] | None = None
     nationalism: unquotedThreeSigFigDecimal | None = None
     building_construction: Repeated[
@@ -309,6 +335,7 @@ class Province(BaseModel):
         RepeatedKeyIndicator | MilitaryConstruction
     ] | None = None
     crime: unquotedInt | None = None
+    colonial: unquotedInt
 
     @classmethod
     @model_validator(mode="after")
@@ -333,11 +360,6 @@ class Research(BaseModel):
     max_producing: unquotedThreeSigFigDecimal
     last_spending: unquotedThreeSigFigDecimal
     active: PDXBoolean
-
-
-class CountryModifier(BaseModel):
-    modifier: str
-    date: quotedPDXDate
 
 
 class TaxBracket(BaseModel):
@@ -388,6 +410,7 @@ class Ship(BaseModel):
 
 class Regiment(Ship):
     pop: Identifier
+    current_distance: unquotedThreeSigFigDecimal
 
 
 class Army(BaseModel):
@@ -400,6 +423,10 @@ class Army(BaseModel):
     dig_in_last_date: quotedPDXDate = "2.1.1"
     supplies: unquotedThreeSigFigDecimal
     regiment: Repeated[RepeatedKeyIndicator | Regiment]
+    base: unquotedInt
+    path: list[unquotedInt] | None = None
+    dig_in: unquotedThreeSigFigDecimal | None = None
+    target: unquotedInt
 
 
 class Navy(BaseModel):
@@ -412,6 +439,10 @@ class Navy(BaseModel):
     dig_in_last_date: quotedPDXDate = "2.1.1"
     supplies: unquotedThreeSigFigDecimal
     ship: Repeated[RepeatedKeyIndicator | Ship]
+    at_sea: unquotedInt | None = "0"
+    no_supply_days: unquotedInt | None = "0"
+    path: list[unquotedInt] | None = None
+    army: Army | None = None
 
 
 class ForeignRelation(BaseModel):
@@ -432,6 +463,10 @@ class ProvinceDesire(BaseModel):
 class DiplomaticAttitude(BaseModel):
     id: quotedTag
     value: unquotedInt
+
+
+class BuildingProvGoal(ProvinceDesire):
+    key: quotedPDXVariable
 
 
 class AIStrategy(BaseModel):
@@ -458,6 +493,16 @@ class AIStrategy(BaseModel):
     rival: Repeated[
         RepeatedKeyIndicator | DiplomaticAttitude
     ] | DiplomaticAttitude | None = None
+    war_with: Repeated[
+        RepeatedKeyIndicator | DiplomaticAttitude
+    ] | DiplomaticAttitude | None = None
+    building_prov: Repeated[
+        RepeatedKeyIndicator | BuildingProvGoal
+    ] | BuildingProvGoal | None = None
+    military_access: Repeated[
+        RepeatedKeyIndicator | DiplomaticAttitude
+    ] | DiplomaticAttitude | None = None
+    status: unquotedInt | None = None
 
 
 class PoliticalMovement(BaseModel):
@@ -479,8 +524,44 @@ class TradePolicy(BaseModel):
     automate_trade: PDXBoolean
 
 
+class PopProject(BaseModel):
+    input_goods: dict[unquotedRGO, unquotedFiveSigFigDecimal] = {}
+    money: unquotedThreeSigFigDecimal
+    building: unquotedInt
+    province: unquotedInt
+    index: unquotedInt
+    type: unquotedInt
+    money2: PDXBoolean = "yes"  # AAAAAAAAAAAAAA
+    pop: unquotedInt
+
+
+class StateBuilding(BaseModel):
+    building: quotedPDXVariable
+    level: unquotedInt
+    stockpile: dict[unquotedRGO, unquotedFiveSigFigDecimal]
+    employment: StateEmployment
+    money: unquotedFiveSigFigDecimal
+    last_spending: unquotedFiveSigFigDecimal
+    last_income: unquotedFiveSigFigDecimal
+    pops_paychecks: unquotedFiveSigFigDecimal
+    last_investment: unquotedFiveSigFigDecimal
+    unprofitable_days: unquotedInt
+    leftover: unquotedFiveSigFigDecimal
+    injected_money: unquotedFiveSigFigDecimal
+    injected_days: unquotedInt
+    produces: unquotedFiveSigFigDecimal
+    profit_history_days: unquotedInt
+    profit_history_current: unquotedInt
+    profit_history_entry: list[unquotedFiveSigFigDecimal]
+    subsidised: PDXBoolean | None = "no"
+    priority: unquotedInt | None = None
+    construction_time_left: unquotedInt | None = None
+    days_without_input: unquotedInt | None = None
+
+
 class State(BaseModel):
     id: Identifier
+    name: quotedPDXVariable | None = None
     provinces: list[unquotedInt]
     is_colonial: unquotedInt | None = None
     savings: unquotedFiveSigFigDecimal
@@ -488,6 +569,11 @@ class State(BaseModel):
     flashpoint: PDXBoolean | None = None
     tension: unquotedThreeSigFigDecimal | None = None
     crisis: quotedTag | None = None
+    is_slave: PDXBoolean | None = "no"
+    popproject: PopProject | None = None
+    state_buildings: Repeated[
+        RepeatedKeyIndicator | StateBuilding
+    ] | StateBuilding | None = None
 
 
 class NationalBank(BaseModel):
@@ -497,6 +583,25 @@ class NationalBank(BaseModel):
 
 class Railroad(BaseModel):
     path: list[Annotated[unquotedInt, "Province ID"]]
+
+
+class Creditor(BaseModel):
+    country: quotedTag
+    interest: unquotedFiveSigFigDecimal
+    debt: unquotedFiveSigFigDecimal
+    was_paid: PDXBoolean
+
+
+class ScheduledMobilization(BaseModel):
+    progress: unquotedThreeSigFigDecimal
+    location: unquotedInt
+    from_province: unquotedInt
+    sub_unit: unquotedInt
+    pop: Identifier
+    spawned: PDXBoolean
+    country: quotedTag
+    active: PDXBoolean
+    rally_point: unquotedInt
 
 
 class Nation(BaseModel):
@@ -525,6 +630,22 @@ class Nation(BaseModel):
     press_rights: unquotedPDXVariable
     trade_unions: unquotedPDXVariable
     political_parties: unquotedPDXVariable
+    admin_reform: unquotedPDXVariable | None
+    army_schools: unquotedPDXVariable | None
+    education_reform: unquotedPDXVariable | None
+    finance_reform: unquotedPDXVariable | None
+    foreign_naval_officers: unquotedPDXVariable | None
+    foreign_navies: unquotedPDXVariable | None
+    foreign_officers: unquotedPDXVariable | None
+    foreign_training: unquotedPDXVariable | None
+    foreign_weapons: unquotedPDXVariable | None
+    industrial_construction: unquotedPDXVariable | None
+    land_reform: unquotedPDXVariable | None
+    military_constructions: unquotedPDXVariable | None
+    naval_schools: unquotedPDXVariable | None
+    pre_indust: unquotedPDXVariable | None
+    tariffs: unquotedPDXVariable | None
+    transport_improv: unquotedPDXVariable | None
     upper_house: dict[unquotedIdeology, unquotedFiveSigFigDecimal]
     last_party_change: quotedPDXDate | None = None
     ruling_party: unquotedInt | None = None
@@ -537,7 +658,7 @@ class Nation(BaseModel):
     government: unquotedPDXVariable | None = None
     plurality: unquotedThreeSigFigDecimal
     revanchism: unquotedThreeSigFigDecimal
-    modifier: Repeated[RepeatedKeyIndicator | CountryModifier] | None = None
+    modifier: Repeated[RepeatedKeyIndicator | Modifier] | None = None
     poor_tax: TaxBracket
     middle_tax: TaxBracket
     rich_tax: TaxBracket
@@ -600,6 +721,14 @@ class Nation(BaseModel):
     railroads: Repeated[RepeatedKeyIndicator | Railroad] | Railroad | None = None
     is_releasable_vassal: PDXBoolean = "yes"
     nationalvalue: quotedPDXVariable
+    creditor: Repeated[RepeatedKeyIndicator | Creditor] | Creditor | None = None
+    last_greatness_date: quotedPDXDate | None = None
+    mobilize: PDXBoolean | None = None
+    colonize: dict[unquotedInt, unquotedInt] | None = None
+    war_exhaustion: unquotedThreeSigFigDecimal
+    scheduled_mobilization: Repeated[
+        RepeatedKeyIndicator | ScheduledMobilization
+    ] | ScheduledMobilization | None = None
 
     @classmethod
     @model_validator(mode="after")
