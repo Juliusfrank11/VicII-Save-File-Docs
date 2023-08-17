@@ -5,3 +5,5 @@ saves/*
 tabbed_saves/*
 json_saves/*
 .DS_Store
+test.py
+test.ipynb
