@@ -5,6 +5,17 @@ import os
 from pydantic import ValidationError
 
 
+def fix_religion_culture(POP_dict):
+    religions = "catholic coptic orthodox protestant gelugpa hindu mahayana shinto sikh theravada jewish shiite sunni animist".split()
+    new_dict = {}
+    for k, v in POP_dict.items():
+        if v in religions:
+            new_dict["culture"] = {"name": k, "religion": v}
+        else:
+            new_dict[k] = v
+    return new_dict
+
+
 def collect_repeated_keys(dictionary):
     def is_all_digits(string):
         return all([c in "0123456789." for c in string])
@@ -49,6 +60,12 @@ def collect_repeated_keys(dictionary):
     return dictionary
 
 
+def dict_depth(my_dict):
+    if isinstance(my_dict, dict):
+        return 1 + (max(map(dict_depth, my_dict.values())) if my_dict else 0)
+    return 0
+
+
 if not os.path.exists("consolidated_json_save.json"):
     with open("json_saves/autosave.json", "r") as f:
         raw_json_save = json.load(f)
@@ -66,6 +83,26 @@ if not os.path.exists("consolidated_json_save.json"):
             json_save["province_data"][k] = v
             del json_save[k]
     consolidated_json_save = collect_repeated_keys(json_save)
+    for _ in range(dict_depth(consolidated_json_save)):
+        # extremely dumb and slow, but it works
+        consolidated_json_save = collect_repeated_keys(consolidated_json_save)
+    # fix Pop culture label
+    # it's usually {culture}={religion} like french=catholic, which is dumb
+    # changes to {culture: {name: `{culture}`, religion: `{religion}` }}
+    for k, v in consolidated_json_save["province_data"].items():
+        pop_types = "craftsmen farmers labourers slaves soldiers artisans bureaucrats clergymen clerks officers aristocrats capitalists".split()
+        religions = "catholic coptic orthodox protestant gelugpa hindu mahayana shinto sikh theravada jewish shiite sunni animist".split()
+        for pop_type in pop_types:
+            pops = v.get(pop_type)
+            if pops is not None:
+                if isinstance(pops, dict):
+                    consolidated_json_save["province_data"][k][
+                        pop_type
+                    ] = fix_religion_culture(pops)
+                elif isinstance(pops, list):
+                    consolidated_json_save["province_data"][k][pop_type] = [
+                        fix_religion_culture(pop) for pop in pops
+                    ]
     json.dump(consolidated_json_save, open("consolidated_json_save.json", "w"))
 else:
     with open("consolidated_json_save.json", "r") as f:
