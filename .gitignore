@@ -4,6 +4,7 @@ __pycache__/*
 saves/*
 tabbed_saves/*
 json_saves/*
+consolidated_json_saves/*
 .DS_Store
 test.py
 test.ipynb

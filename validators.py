@@ -68,10 +68,12 @@ def validate_tag(tag: str, lookup=False, new_tags_in_mod=[]):
 
 @_make_string_unquoted_wrapper
 def validate_pdx_date(date_str: str):
-    try:
-        date(*[int(part) for part in date_str.split(".")])
-    except ValueError:
-        raise ValueError(f"{date_str} is not a valid PDX date (YYYY.MM.DD)")
+    # years can be negative (maybe hold over form EU Rome), but only used in VicII as a placeholder
+    if date_str != "-1.1.1":
+        try:
+            date(*[int(part) for part in date_str.split(".")])
+        except ValueError:
+            raise ValueError(f"{date_str} is not a valid PDX date (YYYY.MM.DD)")
     return date_str
 
 
