@@ -1,3 +1,5 @@
+**NOTE: I have added pydantic models that I've been working on in another unpublished remote so this whole readme needs a rewrite soon**
+
 # VicII-Save-File-Docs
 ## Documentation for the Victoria II Save File structure
 

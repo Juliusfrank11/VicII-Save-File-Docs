@@ -604,5 +604,5 @@ class VicIISave(BaseModel):
     invention: list[int]
     great_nation: Annotated[list[int], 8]
     outliner: list[int]
-    # TODO: new_collector, need to add support for parsing strings first
+    # TODO: news_collector, need to add support for parsing strings first
     region: Repeated[Region]
