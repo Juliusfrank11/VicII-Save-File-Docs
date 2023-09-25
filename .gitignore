@@ -156,3 +156,15 @@ tabbed_saves/
 parsers.ipynb
 json_saves/
 .DS_Store
+venv/*
+history/*
+__pycache__/*
+saves/*
+tabbed_saves/*
+json_saves/*
+consolidated_json_saves/*
+.DS_Store
+test.py
+test.ipynb
+consolidated_json_save.json
+test.py
