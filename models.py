@@ -239,11 +239,11 @@ class ProvincePopId(BaseModel):
 
 
 class EmployeeData(BaseModel):
-    province_pop_id: dict[repeated_key_indicator, list[ProvincePopId]] | ProvincePopId
+    province_pop_id: dict[repeated_key_indicator, list[ProvincePopId]]
     count: unquotedInt
 
     @classmethod
-    @model_validator("province_pop_id")
+    @field_validator("province_pop_id")
     def handle_not_repated(cls, v: dict):
         return handle_singleton_repeated_key(v)
 
@@ -290,11 +290,6 @@ class BuildingConstruction(BaseModel):
     start_date: quotedPDXDate
     input_goods: dict[unquotedRGO, unquotedFiveSigFigDecimal]
 
-    @classmethod
-    @model_validator("input_goods")
-    def handle_not_repeated(cls, v: dict):
-        return handle_singleton_repeated_key(v)
-
 
 class MilitaryInputGoodsData(BaseModel):
     goods_demand: dict[unquotedRGO, unquotedFiveSigFigDecimal]
@@ -329,7 +324,7 @@ class Province(BaseModel):
     garrison: unquotedThreeSigFigDecimal
     owner: quotedTag | None = None
     controller: quotedTag | None = None
-    core: dict[repeated_key_indicator, list[quotedTag]] | quotedTag | None = None
+    core: dict[repeated_key_indicator, list[quotedTag]] | None = None
     fort: Annotated[list[unquotedThreeSigFigDecimal], 2] | None = None
     railroad: Annotated[list[unquotedThreeSigFigDecimal], 2] | None = None
     naval_base: Annotated[list[unquotedThreeSigFigDecimal], 2] | None = None
@@ -397,10 +392,11 @@ class Province(BaseModel):
         "aristocrats",
         "capitalists",
         "modifier",
-        "party_loyalty" "building_construction",
+        "party_loyalty",
+        "building_construction",
         "military_construction",
     )
-    def handle_not_repeated_artisan(cls, v: dict | None):
+    def handle_not_repeated(cls, v: dict | None):
         return handle_singleton_repeated_key(v)
 
 
@@ -472,11 +468,16 @@ class Army(BaseModel):
     location: Annotated[unquotedInt, "Province ID"]
     dig_in_last_date: quotedPDXDate = "2.1.1"
     supplies: unquotedThreeSigFigDecimal
-    regiment: dict[repeated_key_indicator, list[Regiment]] | Regiment
+    regiment: dict[repeated_key_indicator, list[Regiment]]
     base: unquotedInt
     path: list[unquotedInt] | None = None
     dig_in: unquotedThreeSigFigDecimal | None = None
     target: unquotedInt
+
+    @classmethod
+    @field_validator("regiment")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class Navy(BaseModel):
@@ -488,11 +489,16 @@ class Navy(BaseModel):
     location: Annotated[unquotedInt, "Province ID"]
     dig_in_last_date: quotedPDXDate = "2.1.1"
     supplies: unquotedThreeSigFigDecimal
-    ship: dict[repeated_key_indicator, list[Ship]] | Ship
+    ship: dict[repeated_key_indicator, list[Ship]]
     at_sea: unquotedInt | None = "0"
     no_supply_days: unquotedInt | None = "0"
     path: list[unquotedInt] | None = None
     army: Army | None = None
+
+    @classmethod
+    @field_validator("ship")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class ForeignRelation(BaseModel):
@@ -525,34 +531,33 @@ class AIStrategy(BaseModel):
     date: quotedPDXDate
     static: PDXBoolean
     personality: unquotedPDXVariable
-    conquer_prov: dict[
-        repeated_key_indicator, list[ProvinceDesire]
-    ] | ProvinceDesire | None = None
-    threat: dict[
-        repeated_key_indicator, list[DiplomaticAttitude]
-    ] | DiplomaticAttitude | None = None
-    antagonize: dict[
-        repeated_key_indicator, list[DiplomaticAttitude]
-    ] | DiplomaticAttitude | None = None
-    befriend: dict[
-        repeated_key_indicator, list[DiplomaticAttitude]
-    ] | DiplomaticAttitude | None = None
-    protect: dict[
-        repeated_key_indicator, list[DiplomaticAttitude]
-    ] | DiplomaticAttitude | None = None
-    rival: dict[
-        repeated_key_indicator, list[DiplomaticAttitude]
-    ] | DiplomaticAttitude | None = None
-    war_with: dict[
-        repeated_key_indicator, list[DiplomaticAttitude]
-    ] | DiplomaticAttitude | None = None
-    building_prov: dict[
-        repeated_key_indicator, list[BuildingProvGoal]
-    ] | BuildingProvGoal | None = None
+    conquer_prov: dict[repeated_key_indicator, list[ProvinceDesire]] | None = None
+    threat: dict[repeated_key_indicator, list[DiplomaticAttitude]] | None = None
+    antagonize: dict[repeated_key_indicator, list[DiplomaticAttitude]] | None = None
+    befriend: dict[repeated_key_indicator, list[DiplomaticAttitude]] | None = None
+    protect: dict[repeated_key_indicator, list[DiplomaticAttitude]] | None = None
+    rival: dict[repeated_key_indicator, list[DiplomaticAttitude]] | None = None
+    war_with: dict[repeated_key_indicator, list[DiplomaticAttitude]] | None = None
+    building_prov: dict[repeated_key_indicator, list[BuildingProvGoal]] | None = None
     military_access: dict[
         repeated_key_indicator, list[DiplomaticAttitude]
-    ] | DiplomaticAttitude | None = None
+    ] | None = None
     status: unquotedInt | None = None
+
+    @classmethod
+    @field_validator(
+        "conquer_prov",
+        "threat",
+        "antagonize",
+        "befriend",
+        "protect",
+        "rival",
+        "war_with",
+        "building_prov",
+        "military_access",
+    )
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class PoliticalMovement(BaseModel):
@@ -623,9 +628,12 @@ class State(BaseModel):
     crisis: quotedTag | None = None
     is_slave: PDXBoolean | None = "no"
     popproject: PopProject | None = None
-    state_buildings: dict[
-        repeated_key_indicator, list[StateBuilding]
-    ] | StateBuilding | None = None
+    state_buildings: dict[repeated_key_indicator, list[StateBuilding]]
+
+    @classmethod
+    @field_validator("state_buildings")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class NationalBank(BaseModel):
@@ -780,17 +788,17 @@ class Nation(BaseModel):
     next_quarterly_pulse: quotedPDXDate
     next_yearly_pulse: quotedPDXDate
     suppression: unquotedThreeSigFigDecimal
-    railroads: dict[repeated_key_indicator, list[Railroad]] | Railroad | None = None
+    railroads: dict[repeated_key_indicator, list[Railroad]] | None = None
     is_releasable_vassal: PDXBoolean = "yes"
     nationalvalue: quotedPDXVariable
-    creditor: dict[repeated_key_indicator, list[Creditor]] | Creditor | None = None
+    creditor: dict[repeated_key_indicator, list[Creditor]] | None = None
     last_greatness_date: quotedPDXDate | None = None
     mobilize: PDXBoolean | None = None
     colonize: dict[unquotedInt, unquotedInt] | None = None
     war_exhaustion: unquotedThreeSigFigDecimal
     scheduled_mobilization: dict[
         repeated_key_indicator, list[ScheduledMobilization]
-    ] | ScheduledMobilization | None = None
+    ] | None = None
     last_lost_war: quotedPDXDate
     diplomatic_action: dict[unquotedPDXVariable, DiplomaticAction]
     domain_region: quotedPDXVariable
@@ -811,6 +819,21 @@ class Nation(BaseModel):
                     "You must have a government if you are not a rebel! As in, `ruling_party`, `active_party`, `government` and `primary_culture` must be defined"
                 )
             return self
+
+    @classmethod
+    @field_validator(
+        "modifier",
+        "leader",
+        "army",
+        "navy",
+        "movement",
+        "state",
+        "railroads",
+        "creditor",
+        "scheduled_mobilization",
+    )
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
     # TODO: add validator for countries that currently exist
 
@@ -836,7 +859,12 @@ class RebelFaction(BaseModel):
     next_unit: unquotedInt
     unit_names: dict[Literal["data"], RebelUnitNames]
     provinces: list[unquotedInt]
-    army: dict[repeated_key_indicator, list[Identifier]] | Identifier
+    army: dict[repeated_key_indicator, list[Identifier]]
+
+    @classmethod
+    @field_validator("army")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class Alliance(BaseModel):
@@ -868,32 +896,45 @@ class CasusBelli(BaseModel):
 
 
 class Diplomacy(BaseModel):
-    alliance: dict[repeated_key_indicator, list[Alliance]] | Alliance | None = None
-    vassal: dict[repeated_key_indicator, list[Vassalage]] | Vassalage | None = None
-    substate: dict[repeated_key_indicator, list[Vassalage]] | Vassalage | None = None
-    casus_belli: dict[
-        repeated_key_indicator, list[CasusBelli]
-    ] | CasusBelli | None = None
+    alliance: dict[repeated_key_indicator, list[Alliance]] | None = None
+    vassal: dict[repeated_key_indicator, list[Vassalage]] | None = None
+    substate: dict[repeated_key_indicator, list[Vassalage]] | None = None
+    casus_belli: dict[repeated_key_indicator, list[CasusBelli]] | None = None
     po_disarmament: dict[
         repeated_key_indicator, list[PeaceOfferCondition]
-    ] | PeaceOfferCondition | None = None
-    reparations: dict[
-        repeated_key_indicator, list[PeaceOfferCondition]
-    ] | PeaceOfferCondition | None = None
+    ] | None = None
+    reparations: dict[repeated_key_indicator, list[PeaceOfferCondition]] | None = None
+
+    @classmethod
+    @field_validator(
+        "alliance",
+        "vassal",
+        "substate",
+        "casus_belli",
+        "po_disarmament",
+        "reparations",
+    )
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class Combatant(BaseModel):
     dice: unquotedInt
-    unit: dict[repeated_key_indicator, list[Identifier]] | Identifier | None = None
+    unit: dict[repeated_key_indicator, list[Identifier]] | None = None
     losses: unquotedThreeSigFigDecimal
     accumulated_losses: list[unquotedThreeSigFigDecimal]
     front: dict[unquotedInt, Identifier]
     back: dict[unquotedInt, Identifier]
     retreat: Identifier
 
+    @classmethod
+    @field_validator("unit")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
+
 
 class LandCombatant(Combatant):
-    reserves: dict[repeated_key_indicator, list[Identifier]] | Identifier | None = None
+    reserves: dict[repeated_key_indicator, list[Identifier]] | None = None
     irregular: unquotedThreeSigFigDecimal = Decimal(0.000)
     infantry: unquotedThreeSigFigDecimal = Decimal(0.000)
     guard: unquotedThreeSigFigDecimal = Decimal(0.000)
@@ -905,6 +946,11 @@ class LandCombatant(Combatant):
     artillery: unquotedThreeSigFigDecimal = Decimal(0.000)
     engineer: unquotedThreeSigFigDecimal = Decimal(0.000)
     armor: unquotedThreeSigFigDecimal = Decimal(0.000)
+
+    @classmethod
+    @field_validator("reserves")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class NavalCombatSlot(BaseModel):
@@ -934,6 +980,11 @@ class NavalCombatant(Combatant):
     dreadnought: unquotedInt | None = None
     monitor: unquotedInt | None = None
 
+    @classmethod
+    @field_validator("naval_combat_slot")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
+
 
 class Siege(BaseModel):
     location: Annotated[unquotedInt, "Province Id"]
@@ -961,13 +1012,14 @@ class NavalBattle(BaseModel):
 
 
 class Combat(BaseModel):
-    siege_combat: dict[repeated_key_indicator, list[Siege]] | Siege | None = None
-    land_combat: dict[
-        repeated_key_indicator, list[LandBattle]
-    ] | LandBattle | None = None
-    naval_combat: dict[
-        repeated_key_indicator, list[NavalBattle]
-    ] | NavalBattle | None = None
+    siege_combat: dict[repeated_key_indicator, list[Siege]] | None = None
+    land_combat: dict[repeated_key_indicator, list[LandBattle]] | None = None
+    naval_combat: dict[repeated_key_indicator, list[NavalBattle]] | None = None
+
+    @classmethod
+    @field_validator("siege_combat", "land_combat", "navel_combat")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class Colony(BaseModel):
@@ -982,7 +1034,12 @@ class Region(BaseModel):
     phase: unquotedInt
     date: quotedPDXDate | None = None
     temperature: unquotedThreeSigFigDecimal
-    colony: dict[repeated_key_indicator, list[Colony]] | Colony | None = None
+    colony: dict[repeated_key_indicator, list[Colony]] | None = None
+
+    @classmethod
+    @field_validator("colony")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class CrisisManager(BaseModel):
@@ -1043,26 +1100,34 @@ class WarDiplomacyEntry(BaseModel):
 
 class War(BaseModel):
     name: quotedPDXVariable
-    history: dict[
-        unquotedPDXDate,
-        WarDiplomacyEntry
-        | dict[Literal["battle"], BattleHistoryEntry]
-        | dict[
-            repeated_key_indicator,
-            list[WarDiplomacyEntry | dict[Literal["battle"], BattleHistoryEntry]],
-        ],
-    ]
+    history: dict
     original_attacker: quotedTag
     original_defender: quotedTag
     action: quotedPDXDate
     original_wargoal: WarGoal
     great_wars_enabled: PDXBoolean | None = None
 
+    @classmethod
+    @field_validator("history")
+    def validate_history(cls, value: dict):
+        for k, v in value.items():
+            for entry in v[repeated_key_indicator]:
+                if k == "battle":
+                    BattleHistoryEntry.model_validate(entry)
+                else:
+                    WarDiplomacyEntry.model_validate(entry)
+        return value
+
 
 class ActiveWar(War):
     attacker: quotedTag
     defender: quotedTag
-    war_goal: dict[repeated_key_indicator, list[WarGoal]] | WarGoal
+    war_goal: dict[repeated_key_indicator, list[WarGoal]]
+
+    @classmethod
+    @field_validator("war_goal")
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)
 
 
 class VicIISave(BaseModel):
@@ -1092,7 +1157,7 @@ class VicIISave(BaseModel):
     communist: IdeologyEnabled
     anarcho_liberal: IdeologyEnabled
     canals: list[unquotedInt]
-    id: dict[repeated_key_indicator, list[Identifier]] | Identifier
+    id: dict[repeated_key_indicator, list[Identifier]]
     fired_events: FiredEvent
     province_data: Annotated[dict[unquotedInt, Province], "Collapse by one level"]
     nation_data: Annotated[dict[unquotedTag, Nation], "Collapse by one level"]
@@ -1100,11 +1165,22 @@ class VicIISave(BaseModel):
     diplomacy: Diplomacy
     combat: Combat
 
-    active_war: dict[repeated_key_indicator, list[ActiveWar]] | ActiveWar | None = None
-    previous_war: dict[repeated_key_indicator, list[War]] | War
+    active_war: dict[repeated_key_indicator, list[ActiveWar]] | None = None
+    previous_war: dict[repeated_key_indicator, list[War]]
     invention: list[unquotedInt] | None = None
     great_nations: Annotated[list[unquotedInt], 8]
     outliner: list[unquotedInt]
     # TODO: news_collector, need to add support for parsing strings first
     region: dict[repeated_key_indicator, list[Region]]
     crisis_manager: CrisisManager
+
+    @classmethod
+    @field_validator(
+        "id",
+        "rebel_faction",
+        "active_war",
+        "previous_war",
+        "region",
+    )
+    def handle_not_repeated(cls, v: dict | None):
+        return handle_singleton_repeated_key(v)

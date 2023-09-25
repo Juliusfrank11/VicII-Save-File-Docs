@@ -7,7 +7,7 @@ save = ""
 for file in os.listdir("consolidated_json_saves/"):
     print(file)
     if save:
-        with open(f"consolidated_json_saves/{save}.json", "r") as f:
+        with open(save, "r") as f:
             json_save = json.load(f)
     else:
         with open(f"consolidated_json_saves/{file}", "r") as f:
